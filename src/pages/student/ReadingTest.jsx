@@ -1,9 +1,5 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
-import {
-  loadInitialAssessment,
-  saveLearningRecord,
-} from "./supportLevel"
 
 // =========================================================
 // DỮ LIỆU CÂU HỎI
@@ -66,7 +62,7 @@ const questions = [
         text: " có nghĩa là gì? Vì sao nhân vật trữ tình lại cảm nhận ",
       },
       {
-        text: "“trời nặng nặng”",
+        text: "“trời nằng nặng”",
         quoted: true,
       },
       {
@@ -460,38 +456,21 @@ function ReadingTest() {
   const handleSubmit = () => {
     if (answeredQuestions !== totalQuestions) return
 
-    const initialAssessment = loadInitialAssessment()
-
-    const readingResult = {
-      testId: "initial-reading-test",
-      textId: "buon-mua-dem",
+    const result = {
       answers,
-      answeredQuestions,
       totalQuestions,
-      maxScore: questions.reduce(
-        (sum, question) => sum + question.maxScore,
-        0
-      ),
-      score: null,
-      scoreStatus: "waiting_for_teacher_grading",
-      initialAssessmentId:
-        initialAssessment?.completedAt || null,
+      answeredQuestions,
       completedAt: new Date().toISOString(),
+      status: "recorded",
     }
 
     localStorage.setItem(
-      "poetry_reading_test_result",
-      JSON.stringify(readingResult)
+      "initialReadingTestResult",
+      JSON.stringify(result)
     )
 
-    saveLearningRecord({
-      type: "initial-reading-test",
-      textId: "buon-mua-dem",
-      score: null,
-      status: "waiting_for_teacher_grading",
-    })
-
     setSubmitted(true)
+    navigate("/student/assessment-result")
   }
 
   const beforeReadingQuestions = questions.filter(
@@ -574,9 +553,6 @@ function ReadingTest() {
                 ĐỀ KIỂM TRA NĂNG LỰC ĐẦU VÀO CỦA HỌC SINH
               </h2>
 
-              <p className="mt-2 text-gray-500">
-                TRƯỚC KHI THAM GIA THỰC NGHIỆM
-              </p>
 
             </div>
 
@@ -632,11 +608,13 @@ function ReadingTest() {
 
         </section>
 
+        <section className="mb-8 grid gap-6 lg:h-[calc(100vh-10rem)] lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-stretch">
+          <div className="min-h-0 overflow-visible rounded-3xl lg:overflow-y-auto lg:overscroll-contain lg:pr-1">
         {/* =====================================================
             ĐỌC VĂN BẢN
         ===================================================== */}
 
-        <section className="mb-8 overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-[#eadfd5]">
+            <section className="mb-8 overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-[#eadfd5]">
 
           {/* TIÊU ĐỀ VĂN BẢN */}
 
@@ -829,13 +807,16 @@ function ReadingTest() {
 
           </div>
 
-        </section>
+            </section>
 
-        {/* =====================================================
-            TRONG QUÁ TRÌNH ĐỌC
+          </div>
+
+          <div className="min-h-0 overflow-visible rounded-3xl lg:overflow-y-auto lg:overscroll-contain lg:pl-1">
+            {/* =====================================================
+                TRONG QUÁ TRÌNH ĐỌC
         ===================================================== */}
 
-        <section className="mb-8 overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-[#eadfd5]">
+                <section className="mb-8 overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-[#eadfd5]">
 
           <div className="border-b border-[#eadfd5] bg-[#fffdf9] px-6 py-5 md:px-8">
 
@@ -880,10 +861,10 @@ function ReadingTest() {
 
           </div>
 
-        </section>
+                </section>
 
-        {/* =====================================================
-            SAU KHI ĐỌC
+            {/* =====================================================
+                SAU KHI ĐỌC
         ===================================================== */}
 
         <section className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-[#eadfd5]">
@@ -917,6 +898,9 @@ function ReadingTest() {
 
           </div>
 
+        </section>
+
+          </div>
         </section>
 
         {/* =====================================================
@@ -964,17 +948,10 @@ function ReadingTest() {
               </p>
 
               <p className="mt-1 text-sm leading-6 text-gray-600">
-                Bài làm đã được lưu. Điểm đọc hiểu sẽ được bổ sung
-                sau khi giáo viên chấm bài theo rubric.
+                Đây là phiên bản DEMO. Phần chấm điểm và xử lý
+                kết quả sẽ được bổ sung sau khi xác nhận rubric
+                từ nhóm nghiên cứu.
               </p>
-
-              <button
-                type="button"
-                onClick={() => navigate("/student/texts")}
-                className="mt-4 rounded-xl bg-[#8f1d2c] px-6 py-3 font-semibold text-white transition hover:bg-[#741624]"
-              >
-                Tiếp tục luyện tập
-              </button>
 
             </div>
           )}
@@ -986,4 +963,4 @@ function ReadingTest() {
   )
 }
 
-export default ReadingTest 
+export default ReadingTest

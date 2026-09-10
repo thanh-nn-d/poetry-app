@@ -1,89 +1,167 @@
-import { useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { getLevelInfo, getSupportLevel, saveLearningProgress, markTextCompleted } from "./supportLevel"
-
-// =========================================================
-// DỮ LIỆU VĂN BẢN
-// =========================================================
+import { getLevelInfo, getSupportLevel, markTextCompleted } from "./supportLevel"
 
 const poem = {
-  title: "Buồn mưa đêm",
-  author: "Huy Cận",
+  id: "nguyet-cam",
+  title: "Nguyệt Cầm",
+  author: "Xuân Diệu",
+  source:
+    "In trong Gửi hương cho gió, NXB Hội Nhà văn, Hội Nghiên cứu – Giảng dạy văn học, Thành phố Hồ Chí Minh, 1992, tr. 77",
 }
-
-// =========================================================
-// 5 HOẠT ĐỘNG
-// =========================================================
 
 const activities = [
   {
     id: 1,
     title: "Tìm hiểu đặc sắc từ ngữ, hình ảnh qua sự tương giao cảm giác",
-    shortTitle: "Tìm hiểu đặc sắc từ ngữ, hình ảnh qua sự tương giao cảm giác",
-    description:
-      "Phân tích từ ngữ, hình ảnh qua đặc điểm cảm giác/giác quan và giá trị biểu đạt.",
+    shortTitle: "Tương giao cảm giác",
   },
   {
     id: 2,
     title: "Tìm hiểu yếu tố tượng trưng",
-    shortTitle: "Tượng trưng",
-    description:
-      "Khám phá ý nghĩa trực tiếp, liên tưởng và ý nghĩa tượng trưng của hình ảnh, từ ngữ.",
+    shortTitle: "Yếu tố tượng trưng",
   },
   {
     id: 3,
     title: "Tìm hiểu nhạc điệu",
-    shortTitle: "Tìm hiểu nhạc điệu",
-    description:
-      "Nhận diện và phân tích nhịp, vần, âm thanh và sự lặp lại trong bài thơ.",
+    shortTitle: "Nhạc điệu",
   },
   {
     id: 4,
     title: "Tìm hiểu tình cảm, cảm xúc của chủ thể trữ tình",
     shortTitle: "Cảm xúc",
-    description:
-      "Xác định chủ thể trữ tình, bằng chứng cảm xúc và sự vận động của cảm xúc.",
   },
   {
     id: 5,
-    title: "Tìm hiểu cấu tứ",
-    shortTitle: "Tìm hiểu cấu tứ",
-    description:
-      "Tổng hợp dòng chảy cảm xúc, sự phát triển của hình ảnh và cấu trúc tổ chức bài thơ.",
+    title: "Tìm hiểu về cấu tứ",
+    shortTitle: "Cấu tứ",
   },
 ]
 
-const module1Targets = [
-  {
-    id: "troi-nang-nang",
-    label: "trời nằng nặng",
-    senses: ["thính giác", "xúc giác"],
-  },
-  {
-    id: "buon-buon",
-    label: "nghe ta buồn buồn",
-    senses: ["thính giác", "cảm xúc"],
-  },
-  {
-    id: "hoi-may-hiu-hat",
-    label: "Hơi may hiu hắt",
-    senses: ["xúc giác"],
-  },
-  {
-    id: "giot-nhe",
-    label: "giọt nhẹ",
-    senses: ["thính giác", "xúc giác"],
-  },
-  {
-    id: "loi-vu-vo",
-    label: "nối lời vu vơ",
-    senses: ["thính giác", "cảm xúc"],
-  },
+const sensoryTargets = [
+  "… giọt rơi tàn như lệ ngân",
+  "… bóng sáng bỗng rung mình",
+  "Long lanh tiếng sỏi…",
+  "… ánh nhạc: biển pha lê …",
 ]
 
-// =========================================================
-// COMPONENT
-// =========================================================
+const highlightedLines = [
+  "Trăng nhập vào đây cung / nguyệt lạnh",
+  "Trăng thương / trăng nhớ / hỡi trăng ngàn",
+  "Đàn buồn / đàn lặng / ôi đàn chậm!",
+  "Mỗi giọt rơi tàn / như lệ ngân",
+  "Long lanh tiếng sỏi…",
+  "… ánh nhạc: biển pha lê …",
+]
+
+const activityPrompts = {
+  1: {
+    1: [
+      "Đọc lại văn bản và tìm những từ ngữ, hình ảnh gợi ánh sáng, màu sắc, đường nét mà em có thể cảm nhận bằng mắt; đồng thời tìm những từ ngữ, hình ảnh gợi âm thanh, tiếng đàn, nhạc điệu mà em có thể cảm nhận bằng tai.",
+      "Từ những trường hợp đã xác định, phân tích sự kết hợp giữa thị giác và thính giác. Em có thể bắt đầu từ bốn hình ảnh: “giọt rơi tàn như lệ ngân”, “bóng sáng bỗng rung mình”, “Long lanh tiếng sỏi…”, “… ánh nhạc: biển pha lê …”.",
+      "Sự hòa quyện giữa ánh sáng và âm thanh làm cho thế giới trong bài thơ trở nên như thế nào? Từ đó, em cảm nhận gì về thế giới nghệ thuật và tâm trạng của chủ thể trữ tình?",
+      "Từ mối quan hệ giữa “Nguyệt” và “Cầm”, hãy giải thích ý nghĩa nhan đề Nguyệt Cầm.",
+    ],
+    2: [
+      "Xác định những hình ảnh trong đó cảm giác về ánh sáng/trăng và âm thanh/âm nhạc được kết hợp với nhau. Ghi lại hình ảnh và khổ thơ tương ứng.",
+      "Với các hình ảnh đã xác định, phân tích hình ảnh gợi ánh sáng/trăng và hình ảnh gợi âm nhạc/đàn.",
+      "Nhận xét hiệu quả biểu đạt của thủ pháp tương giao giác quan đối với thế giới nghệ thuật và cảm xúc trong bài thơ.",
+      "Từ những khám phá về ánh sáng/trăng và âm nhạc/âm thanh, hãy lí giải ý nghĩa nhan đề Nguyệt Cầm.",
+    ],
+    3: [
+      "Xác định những từ ngữ, hình ảnh được diễn tả bằng sự kết hợp hoặc chuyển đổi giữa các giác quan và cho biết chúng xuất hiện ở khổ thơ nào.",
+      "Phân tích sự tương giao giác quan trong các trường hợp tiêu biểu; làm rõ sự kết hợp giữa các cảm giác qua từ ngữ, hình ảnh của câu thơ.",
+      "Phân tích ý nghĩa và tác dụng nghệ thuật của sự kết hợp giữa các cảm giác trong bài thơ.",
+      "Sau khi đọc và phân tích bài thơ, hãy cho biết ý nghĩa nhan đề Nguyệt Cầm và lí giải bằng những phát hiện từ văn bản.",
+    ],
+  },
+  2: {
+    1: [
+      "Đọc lại bài thơ và tìm những từ ngữ, hình ảnh được sử dụng nổi bật hoặc có cách diễn đạt đặc biệt, ngoài ý nghĩa trực tiếp còn có thể gợi ra những liên tưởng hoặc ý nghĩa khác.",
+      "Dựa vào chú thích và những từ ngữ, hình ảnh xung quanh để xác định liên tưởng và lí giải ý nghĩa tượng trưng của hình ảnh trong Nguyệt Cầm.",
+      "Từ những hình ảnh đã phân tích, khái quát những ý nghĩa tượng trưng nổi bật và mối liên hệ của chúng trong việc thể hiện thế giới nghệ thuật, cảm xúc, tâm trạng hoặc suy ngẫm của chủ thể trữ tình.",
+    ],
+    2: [
+      "Xác định các hình ảnh được đặt trong mối quan hệ đặc biệt với những từ ngữ hoặc hình ảnh khác trong bài thơ.",
+      "Với hình ảnh người phụ nữ ở khổ 2, bến Tầm Dương ở khổ 3 và sao Khuê ở khổ 4, hãy làm rõ nghĩa thực, liên tưởng được gợi ra và ý nghĩa tượng trưng.",
+      "Các hình ảnh tượng trưng có mối quan hệ như thế nào? Sự kết hợp của chúng góp phần thể hiện cảm xúc, tâm trạng hoặc tư tưởng gì của chủ thể trữ tình?",
+    ],
+    3: [
+      "Xác định những hình ảnh có khả năng gợi mở lớp nghĩa liên tưởng bên cạnh ý nghĩa trực tiếp và ghi lại vị trí của chúng.",
+      "Phân tích lớp nghĩa tượng trưng bằng cách làm rõ mối quan hệ giữa ý nghĩa trực tiếp, liên tưởng và ý nghĩa của hình ảnh trong chỉnh thể bài thơ.",
+      "Từ những hình ảnh đã phân tích, khái quát ý nghĩa của hệ thống hình ảnh tượng trưng trong Nguyệt Cầm.",
+    ],
+  },
+  3: {
+    1: [
+      "Theo dõi hướng dẫn để xác định cách ngắt nhịp và phối hợp thanh điệu trong bài thơ.",
+      "Xác định cách ngắt nhịp, phối hợp thanh điệu ở các câu thơ; sau đó khái quát đặc điểm chung.",
+      "Từ nhịp, thanh điệu và liên tưởng đến tiếng đàn, hãy khái quát vai trò của nhạc điệu trong việc tạo âm hưởng và thể hiện cảm xúc của Nguyệt Cầm.",
+    ],
+    2: [
+      "Đọc lại bài thơ và xác định cách ngắt nhịp, sự phối hợp thanh điệu trong các câu thơ; từ đó khái quát chung.",
+      "Cách ngắt nhịp và phối hợp thanh điệu giúp em hình dung như thế nào về tiếng đàn nguyệt trong đêm lạnh?",
+      "Từ nhịp, thanh điệu và liên tưởng về tiếng đàn nguyệt, hãy khái quát vai trò của nhạc điệu trong việc tạo âm hưởng và thể hiện cảm xúc.",
+    ],
+    3: [
+      "Tự xác định cách ngắt nhịp và sự phối hợp thanh điệu trong bài thơ; từ đó khái quát đặc điểm chung.",
+      "Từ những đặc điểm về nhịp và thanh điệu, trình bày những liên tưởng của em về tiếng đàn nguyệt trong đêm lạnh.",
+      "Khái quát vai trò của nhạc điệu trong Nguyệt Cầm đối với âm hưởng, không gian nghệ thuật và cảm xúc của bài thơ.",
+    ],
+  },
+  4: {
+    1: [
+      "Xác định chủ thể trữ tình của bài thơ. Cho biết các cảm giác “lạnh”, “rung mình”, “ghê như nước”, “rợn” là cảm giác của ai và được gợi ra từ đâu.",
+      "Theo dõi sự vận động của cảm xúc qua khổ 1, khổ 2 và 3, khổ 4. Ghi lại chi tiết thể hiện cảm xúc và cảm xúc tương ứng.",
+      "Từ những cảm xúc và sự vận động của chúng, khái quát tình cảm, thái độ chủ đạo của chủ thể trữ tình.",
+    ],
+    2: [
+      "Xác định chủ thể trữ tình, đối tượng hướng tới và hoàn cảnh làm nảy sinh cảm xúc.",
+      "Theo dõi diễn biến của mạch thơ để xác định sự thay đổi trong cảm xúc của chủ thể trữ tình khi cảm nhận tiếng đàn.",
+      "Từ sự vận động của cảm xúc, khái quát tình cảm, thái độ của chủ thể trữ tình đối với đối tượng được hướng tới và đời sống nội tâm.",
+    ],
+    3: [
+      "Đọc lại bài thơ và xác định cảm giác, trạng thái cảm xúc của chủ thể trữ tình trong từng khổ thơ; dựa vào từ ngữ, hình ảnh và chi tiết để lí giải.",
+      "Từ những cảm giác và trạng thái trong từng khổ thơ, khái quát cảm xúc chủ đạo, những sắc thái nổi bật và mối quan hệ với đối tượng được hướng tới.",
+      "Có ý kiến cho rằng: “Trong Nguyệt Cầm, tiếng đàn không chỉ được nghe bằng đôi tai mà còn được cảm nhận bằng toàn bộ tâm hồn.” Em có đồng tình không? Hãy viết đoạn văn trình bày ý kiến.",
+    ],
+  },
+  5: {
+    1: [
+      "Dựa vào những hình tượng nổi bật, đối tượng được tập trung thể hiện và cảm xúc của chủ thể trữ tình để khái quát tứ thơ của Nguyệt Cầm.",
+      "Xác định những hình tượng nổi bật trong từng khổ thơ và theo dõi sự xuất hiện của chúng; xem xét quan hệ tương ứng, song đôi, tương phản, nối tiếp hoặc bổ sung.",
+      "Từ những phân tích trên, khái quát đặc điểm cấu tứ của Nguyệt Cầm và làm rõ cách tổ chức hình tượng, mạch cảm xúc góp phần thể hiện tâm trạng, tình cảm và tư tưởng chủ đề.",
+    ],
+    2: [
+      "Đọc bao quát Nguyệt Cầm và khái quát tứ thơ của bài; xác định ý tưởng, cảm hứng hoặc cách nhìn trung tâm được triển khai xuyên suốt.",
+      "Từ cảm xúc của chủ thể trữ tình, nhận xét cách triển khai mạch cảm xúc; đồng thời xác định những hình ảnh vừa gợi ánh trăng vừa gợi tiếng đàn và nhận xét mối quan hệ giữa trăng và đàn.",
+      "Từ sự hòa quyện giữa ánh trăng và tiếng đàn, khái quát chủ đề, tư tưởng của văn bản Nguyệt Cầm.",
+    ],
+    3: [
+      "Dựa vào những kết quả đọc hiểu đã thực hiện, phân tích cách tứ thơ Nguyệt Cầm được triển khai từ đầu đến cuối bài thơ.",
+      "Phân tích tác dụng của cách tổ chức hình tượng và mạch cảm xúc trong việc triển khai tứ thơ và thể hiện thế giới nội tâm của chủ thể trữ tình.",
+      "Vì sao Xuân Diệu để tiếng đàn hòa quyện với trăng, nước, ánh sáng, sương, không gian và những liên tưởng văn hóa? Cách tổ chức ấy có vai trò gì trong việc phát triển tứ thơ và tạo chiều sâu cảm xúc? Từ đó xác định chủ đề, tư tưởng của bài thơ.",
+    ],
+  },
+}
+
+const supportHints = {
+  1: [
+    "Chú ý hai mạch hình ảnh nổi bật: ánh sáng/trăng và âm nhạc/đàn.",
+    "Hình ảnh có sự tương giao giác quan là hình ảnh được cảm nhận từ hai hay nhiều giác quan.",
+    "Có thể bắt đầu bằng việc đối chiếu hình ảnh ánh sáng/trăng với hình ảnh âm nhạc/đàn.",
+  ],
+  2: [
+    "Chú ý những hình ảnh được đặt trong mối quan hệ đặc biệt với các từ ngữ và hình ảnh khác.",
+    "Có thể dựa vào chú thích văn hóa, văn học và những hình ảnh xung quanh.",
+    "Theo dõi sự vận động của hình tượng và cảm xúc từ đầu đến cuối bài thơ.",
+  ],
+  3: [
+    "Tự chọn bằng chứng trong văn bản và lí giải theo mạch lập luận của em.",
+    "Khi phân tích, đặt hình ảnh, nhịp điệu và cảm xúc trong chỉnh thể bài thơ.",
+    "Hệ thống chủ yếu cung cấp yêu cầu; phần lí giải do em tự xây dựng.",
+  ],
+}
 
 function LearningWorkspace() {
   const navigate = useNavigate()
@@ -91,368 +169,215 @@ function LearningWorkspace() {
   const supportInfo = getLevelInfo(supportLevel)
 
   const [activeActivity, setActiveActivity] = useState(1)
-
-  const [completedActivities, setCompletedActivities] =
-    useState(() => {
-      try {
-        const saved = JSON.parse(localStorage.getItem("currentTextActivities") || "[]")
-        return Array.isArray(saved) ? saved : []
-      } catch {
-        return []
-      }
-    })
-
-  const [answer, setAnswer] = useState("")
-
+  const [completedActivities, setCompletedActivities] = useState([])
+  const [answers, setAnswers] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem("nguyetCamLearningAnswers") || "{}")
+    } catch {
+      return {}
+    }
+  })
+  const [selectedTargets, setSelectedTargets] = useState([])
   const [note, setNote] = useState("")
-
   const [showNoteBox, setShowNoteBox] = useState(false)
 
-  // =========================================================
-  // HOẠT ĐỘNG 1 - TƯƠNG GIAO CẢM GIÁC
-  // =========================================================
+  useEffect(() => {
+    localStorage.setItem("nguyetCamLearningAnswers", JSON.stringify(answers))
+  }, [answers])
 
-  const [selectedTarget, setSelectedTarget] = useState(null)
-  const [selectedSenses, setSelectedSenses] = useState([])
-  const [analysisReason, setAnalysisReason] = useState("")
-  const [expressionEffect, setExpressionEffect] = useState("")
-  const [savedAnalyses, setSavedAnalyses] = useState([])
+  const currentActivity = activities.find((item) => item.id === activeActivity)
 
-  const senseOptions = [
-    "thị giác",
-    "thính giác",
-    "khứu giác",
-    "xúc giác",
-    "vị giác",
-  ]
-
-  // =========================================================
-  // HOẠT ĐỘNG HIỆN TẠI
-  // =========================================================
-
-  const currentActivity = activities.find(
-    (activity) =>
-      activity.id === activeActivity
+  const progress = useMemo(
+    () => Math.round((completedActivities.length / activities.length) * 100),
+    [completedActivities.length],
   )
 
-  // =========================================================
-  // TIẾN ĐỘ
-  // =========================================================
-
-  const progress =
-    (completedActivities.length /
-      activities.length) *
-    100
-
-  // Lưu tiến độ các thao tác của văn bản hiện tại.
-  // Dữ liệu này dùng lại cho trang tổng kết và hồ sơ học tập.
-  const saveCurrentProgress = (nextCompletedActivities) => {
-    localStorage.setItem(
-      "currentTextActivities",
-      JSON.stringify(nextCompletedActivities)
-    )
-
-    saveLearningProgress({
-      currentTextId: (() => {
-        try {
-          return JSON.parse(localStorage.getItem("currentText") || "null")?.id || null
-        } catch {
-          return null
-        }
-      })(),
-      currentActivities: nextCompletedActivities,
-    })
+  const updateAnswer = (activityId, stepIndex, value) => {
+    setAnswers((current) => ({
+      ...current,
+      [`${activityId}-${supportLevel}-${stepIndex}`]: value,
+    }))
   }
 
-  // =========================================================
-  // THAO TÁC PHÂN TÍCH HOẠT ĐỘNG 1
-  // =========================================================
+  const getAnswer = (activityId, stepIndex) =>
+    answers[`${activityId}-${supportLevel}-${stepIndex}`] || ""
 
-  const handleSelectTarget = (target) => {
-    setSelectedTarget(target)
-
-    const existing = savedAnalyses.find(
-      (item) => item.targetId === target.id
-    )
-
-    if (existing) {
-      setSelectedSenses(existing.senses)
-      setAnalysisReason(existing.reason)
-      setExpressionEffect(existing.effect)
-    } else {
-      setSelectedSenses([])
-      setAnalysisReason("")
-      setExpressionEffect("")
-    }
-  }
-
-  const handleToggleSense = (sense) => {
-    setSelectedSenses((current) =>
-      current.includes(sense)
-        ? current.filter((item) => item !== sense)
-        : [...current, sense]
+  const toggleTarget = (target) => {
+    setSelectedTargets((current) =>
+      current.includes(target)
+        ? current.filter((item) => item !== target)
+        : [...current, target],
     )
   }
-
-  const handleSaveAnalysis = () => {
-    if (!selectedTarget) {
-      alert("Hãy chọn một từ ngữ hoặc hình ảnh trong bài thơ.")
-      return
-    }
-
-    if (selectedSenses.length === 0) {
-      alert("Hãy chọn ít nhất một giác quan mà em nhận diện được.")
-      return
-    }
-
-    if (!analysisReason.trim()) {
-      alert("Hãy ghi căn cứ cho lựa chọn của em.")
-      return
-    }
-
-    if (!expressionEffect.trim()) {
-      alert("Hãy nêu cảm nhận về hiệu quả biểu đạt.")
-      return
-    }
-
-    setSavedAnalyses((current) => {
-      const next = current.filter(
-        (item) => item.targetId !== selectedTarget.id
-      )
-
-      return [
-        ...next,
-        {
-          targetId: selectedTarget.id,
-          targetLabel: selectedTarget.label,
-          senses: selectedSenses,
-          reason: analysisReason.trim(),
-          effect: expressionEffect.trim(),
-        },
-      ]
-    })
-
-    alert("Đã lưu phân tích của em.")
-  }
-
-  // =========================================================
-  // HOÀN THÀNH HOẠT ĐỘNG
-  // =========================================================
 
   const handleCompleteActivity = () => {
-    if (activeActivity === 1) {
-      if (savedAnalyses.length === 0) {
-        alert("Hãy hoàn thành ít nhất một phân tích trước khi tiếp tục.")
-        return
-      }
-    } else if (!answer.trim()) {
-      alert("Hãy hoàn thành câu trả lời trước khi tiếp tục.")
+    if (activeActivity === 1 && selectedTargets.length === 0) {
+      alert("Hãy chọn ít nhất một hình ảnh/từ ngữ để bắt đầu phân tích.")
       return
     }
 
-    const nextCompleted = completedActivities.includes(activeActivity)
-      ? completedActivities
-      : [...completedActivities, activeActivity]
+    const prompts = activityPrompts[activeActivity][supportLevel]
+    const hasAnswer = prompts.some((_, index) =>
+      getAnswer(activeActivity, index).trim(),
+    )
 
-    setCompletedActivities(nextCompleted)
-    saveCurrentProgress(nextCompleted)
-    setAnswer("")
+    if (!hasAnswer) {
+      alert("Hãy hoàn thành ít nhất một phần trả lời trước khi tiếp tục.")
+      return
+    }
+
+    setCompletedActivities((current) =>
+      current.includes(activeActivity)
+        ? current
+        : [...current, activeActivity],
+    )
 
     if (activeActivity < activities.length) {
       setActiveActivity(activeActivity + 1)
-      setSelectedTarget(null)
-      setSelectedSenses([])
-      setAnalysisReason("")
-      setExpressionEffect("")
-      window.setTimeout(() => {
-        document.getElementById(`activity-${activeActivity + 1}`)?.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-        })
+      setSelectedTargets([])
+      setTimeout(() => {
+        document
+          .getElementById(`activity-${activeActivity + 1}`)
+          ?.scrollIntoView({ behavior: "smooth", block: "center" })
       }, 100)
     }
   }
 
-  // =========================================================
-  // CHUYỂN HOẠT ĐỘNG
-  // =========================================================
-
   const handleActivityChange = (activityId) => {
-    if (activityId > 1) {
-      const previousCompleted =
-        completedActivities.includes(
-          activityId - 1
-        )
-
-      if (!previousCompleted) {
-        return
-      }
-    }
-
-    setActiveActivity(activityId)
-    setAnswer("")
-
-    if (activityId !== 1) {
-      setSelectedTarget(null)
-      setSelectedSenses([])
-      setAnalysisReason("")
-      setExpressionEffect("")
-    }
-
-    setTimeout(() => {
-      document
-        .getElementById(
-          `activity-${activityId}`
-        )
-        ?.scrollIntoView({
-          behavior: "smooth",
-          block: "center",
-        })
-    }, 100)
-  }
-
-  // =========================================================
-  // HOÀN THÀNH TOÀN BỘ
-  // =========================================================
-
-  const handleFinish = () => {
-    const currentText = (() => {
-      try {
-        return JSON.parse(localStorage.getItem("currentText") || "null")
-      } catch {
-        return null
-      }
-    })()
-
-    if (!currentText?.id) {
-      alert("Không xác định được văn bản hiện tại.")
+    if (
+      activityId > 1 &&
+      !completedActivities.includes(activityId - 1)
+    ) {
       return
     }
 
-    const startedAt = Number(localStorage.getItem("learningStartedAt") || Date.now())
-    const elapsedSeconds = Math.max(0, Math.round((Date.now() - startedAt) / 1000))
+    setActiveActivity(activityId)
+    setSelectedTargets([])
+    setTimeout(() => {
+      document
+        .getElementById(`activity-${activityId}`)
+        ?.scrollIntoView({ behavior: "smooth", block: "center" })
+    }, 100)
+  }
 
-    saveCurrentProgress(completedActivities)
-    markTextCompleted(currentText.id, elapsedSeconds)
+  const handleFinish = () => {
+    if (completedActivities.length !== activities.length) {
+      alert("Hãy hoàn thành tất cả 5 hoạt động trước khi xem kết quả.")
+      return
+    }
+
+    const startedAt = Number(
+      localStorage.getItem("learningStartedAt") || Date.now(),
+    )
+    const elapsedSeconds = Math.max(
+      0,
+      Math.round((Date.now() - startedAt) / 1000),
+    )
+
+    localStorage.setItem(
+      "nguyetCamLearningResult",
+      JSON.stringify({
+        textId: poem.id,
+        title: poem.title,
+        author: poem.author,
+        supportLevel,
+        completedActivities: activities.length,
+        answers,
+        elapsedSeconds,
+        completedAt: new Date().toISOString(),
+      }),
+    )
+
+    markTextCompleted(poem.id, elapsedSeconds)
+    localStorage.removeItem("learningStartedAt")
     navigate("/student/summary")
   }
 
+  const poemTextAvailable = true
+
+  const poemStanzas = [
+    [
+      "Trăng nhập vào đây cung nguyệt lạnh,",
+      "Trăng thương, trăng nhớ, hỡi trăng ngàn.",
+      "Đàn buồn, đàn lặng, ôi đàn chậm!",
+      "Mỗi giọt rơi tàn như lệ ngân.",
+    ],
+    [
+      "Mây vắng, trời trong, đêm thủy tinh;",
+      "Linh lung bóng sáng bỗng rung mình",
+      "Vì nghe nương tử trong câu hát",
+      "Đã chết đêm rằm theo nước xanh.",
+    ],
+    [
+      "Thu lạnh càng thêm nguyệt tỏ ngời,",
+      "Đàn ghê như nước, lạnh, trời ơi...",
+      "Long lanh tiếng sỏi vang vang hận.",
+      "Trăng nhớ Tầm Dương, nhạc nhớ người.",
+    ],
+    [
+      "Bốn bề ánh nhạc: biển pha lê",
+      "Chiếc đảo hồn tôi rợn bốn bề.",
+      "Sương bạc làm thinh, khuya nín thở",
+      "Nghe sầu âm nhạc đến sao Khuê.",
+    ],
+  ]
+
   return (
-    <div className="min-h-screen bg-[#faf8f3]">
-
-      {/* =====================================================
-          HEADER
-      ===================================================== */}
-
+    <div className="min-h-screen bg-[#faf8f3] text-gray-800">
       <header className="sticky top-0 z-50 border-b border-[#eadfd5] bg-white/95 backdrop-blur">
-
         <div className="mx-auto max-w-7xl px-6 py-4">
-
           <div className="flex items-center justify-between gap-6">
-
             <div>
-
               <p className="text-xs font-semibold uppercase tracking-wide text-[#a16207]">
                 Không gian học tập
               </p>
-
               <h1 className="mt-1 text-xl font-bold text-[#7f1d2d]">
                 {poem.title}
               </h1>
-
-              <p className="mt-1 text-sm text-gray-500">
-                {poem.author}
-              </p>
-
-              <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-[#ead7c8] bg-[#fffaf3] px-3 py-1.5 text-xs font-semibold text-[#7f1d2d]">
-                <span>Mức hỗ trợ {supportLevel}</span>
-                <span className="font-normal text-gray-500">· {supportInfo.shortName}</span>
-              </div>
-
+              <p className="mt-1 text-sm text-gray-500">{poem.author}</p>
             </div>
 
-            {/* TIẾN ĐỘ */}
-
             <div className="hidden min-w-[220px] sm:block">
-
               <div className="mb-2 flex items-center justify-between">
-
                 <span className="text-xs font-medium text-gray-500">
                   Tiến độ luyện tập
                 </span>
-
                 <span className="text-xs font-bold text-[#7f1d2d]">
-                  {completedActivities.length}/
-                  {activities.length}
+                  {completedActivities.length}/{activities.length}
                 </span>
-
               </div>
-
               <div className="h-2 overflow-hidden rounded-full bg-gray-100">
-
                 <div
                   className="h-full rounded-full bg-[#8f1d2c] transition-all"
-                  style={{
-                    width: `${progress}%`,
-                  }}
+                  style={{ width: `${progress}%` }}
                 />
-
               </div>
-
             </div>
-
           </div>
-
         </div>
-
       </header>
 
-      {/* =====================================================
-          MAIN
-      ===================================================== */}
-
       <main className="mx-auto max-w-7xl px-6 py-6">
-
-        <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)_300px]">
-
-          {/* =================================================
-              LEFT - 5 HOẠT ĐỘNG
-          ================================================= */}
-
+        <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)_340px]">
           <aside className="h-fit rounded-3xl bg-white p-4 shadow-sm ring-1 ring-[#eadfd5] lg:sticky lg:top-28">
-
             <p className="px-3 py-2 text-xs font-bold uppercase tracking-wide text-gray-400">
               Hoạt động
             </p>
 
             <div className="space-y-2">
-
               {activities.map((activity) => {
-
-                const isActive =
-                  activeActivity === activity.id
-
-                const isCompleted =
-                  completedActivities.includes(
-                    activity.id
-                  )
-
+                const isActive = activeActivity === activity.id
+                const isCompleted = completedActivities.includes(activity.id)
                 const isLocked =
                   activity.id > 1 &&
-                  !completedActivities.includes(
-                    activity.id - 1
-                  )
+                  !completedActivities.includes(activity.id - 1)
 
                 return (
                   <button
                     key={activity.id}
                     type="button"
                     disabled={isLocked}
-                    onClick={() =>
-                      handleActivityChange(
-                        activity.id
-                      )
-                    }
+                    onClick={() => handleActivityChange(activity.id)}
                     className={`flex w-full items-center gap-3 rounded-2xl p-3 text-left transition ${
                       isActive
                         ? "bg-[#8f1d2c] text-white"
@@ -461,7 +386,6 @@ function LearningWorkspace() {
                           : "text-gray-700 hover:bg-[#faf8f3]"
                     }`}
                   >
-
                     <span
                       className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-xs font-bold ${
                         isActive
@@ -471,607 +395,245 @@ function LearningWorkspace() {
                             : "bg-[#f6eee6] text-[#7f1d2d]"
                       }`}
                     >
-                      {isCompleted
-                        ? "✓"
-                        : activity.id}
+                      {isCompleted ? "✓" : activity.id}
                     </span>
 
                     <div className="min-w-0">
-
-                      <p className="truncate text-sm font-semibold">
+                      <p className="text-sm font-semibold">
                         {activity.shortTitle}
                       </p>
-
                       <p
                         className={`mt-0.5 text-xs ${
-                          isActive
-                            ? "text-white/70"
-                            : "text-gray-400"
+                          isActive ? "text-white/70" : "text-gray-400"
                         }`}
                       >
                         Hoạt động {activity.id}
                       </p>
-
                     </div>
-
                   </button>
                 )
               })}
-
             </div>
-
           </aside>
 
-          {/* =================================================
-              CENTER - VĂN BẢN
-          ================================================= */}
-
           <section className="rounded-3xl bg-white shadow-sm ring-1 ring-[#eadfd5]">
-
-            {/* =================================================
-                TIÊU ĐỀ VĂN BẢN
-            ================================================= */}
-
             <div className="border-b border-[#eadfd5] bg-[#fffdf9] px-6 py-6 text-center md:px-8">
-
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#a16207]">
                 ĐỌC VĂN BẢN
               </p>
-
               <h2 className="mt-3 text-3xl font-bold text-[#7f1d2d]">
-                BUỒN MƯA ĐÊM
+                NGUYỆT CẦM
               </h2>
-
               <p
                 className="mt-1 text-base italic text-gray-600"
-                style={{
-                  fontFamily:
-                    '"Times New Roman", Times, serif',
-                }}
+                style={{ fontFamily: '"Times New Roman", Times, serif' }}
               >
-                - Huy Cận -
+                - Xuân Diệu -
               </p>
-
             </div>
 
-            {/* =================================================
-                NỘI DUNG VĂN BẢN
-            ================================================= */}
-
-            <div className="px-6 py-10 md:px-12">
-
-              <div className="mx-auto max-w-4xl">
-
-                {/* =================================================
-                    BÀI THƠ
-                ================================================= */}
-
-                <div
-                  className="text-[24px] italic leading-[1.65] text-gray-900"
-                  style={{
-                    fontFamily:
-                      '"Times New Roman", Times, serif',
-                  }}
-                >
-
-                  {/* KHỔ 1 */}
-
-                  <div className="mb-9">
-
-                    <p>
-                      Đêm mưa làm nhớ không gian,
-                    </p>
-
-                    <p>
-                      Lòng run thêm lạnh nỗi hàn bao la...
-                    </p>
-
-                  </div>
-
-                  {/* KHỔ 2 */}
-
-                  <div className="mb-9">
-
-                    <p>
-                      Tai nương nước giọt mái nhà
-                    </p>
-
-                    <p>
-                      Nghe{" "}
-                      <button
-                        type="button"
-                        onClick={() =>
-                          handleSelectTarget(
-                            module1Targets.find(
-                              (item) => item.id === "troi-nang-nang"
-                            )
-                          )
-                        }
-                        className={`rounded px-1 transition ${
-                          selectedTarget?.id === "troi-nang-nang"
-                            ? "bg-[#f4dfb2] text-[#7f1d2d]"
-                            : "font-bold hover:bg-[#fff0d2]"
-                        }`}
-                      >
-                        trời nằng nặng
-                      </button>
-                      , nghe{" "}
-                      <button
-                        type="button"
-                        onClick={() =>
-                          handleSelectTarget(
-                            module1Targets.find(
-                              (item) => item.id === "buon-buon"
-                            )
-                          )
-                        }
-                        className={`rounded px-1 transition ${
-                          selectedTarget?.id === "buon-buon"
-                            ? "bg-[#f4dfb2] text-[#7f1d2d]"
-                            : "hover:bg-[#fff0d2]"
-                        }`}
-                      >
-                        ta buồn buồn
-                      </button>
-                      .
-                    </p>
-
-                    <p>
-                      Nghe đi rời rạc trong hồn
-                    </p>
-
-                    <p>
-                      Những chân xa vắng dặm mòn lẻ loi...
-                    </p>
-
-                  </div>
-
-                  {/* KHỔ 3 */}
-
-                  <div className="mb-9">
-
-                    <p>
-                      Rơi rơi... dìu dịu rơi rơi...
-                    </p>
-
-                    <p>
-                      Trăm muôn{" "}
-                      <button
-                        type="button"
-                        onClick={() =>
-                          handleSelectTarget(
-                            module1Targets.find(
-                              (item) => item.id === "giot-nhe"
-                            )
-                          )
-                        }
-                        className={`rounded px-1 transition ${
-                          selectedTarget?.id === "giot-nhe"
-                            ? "bg-[#f4dfb2] text-[#7f1d2d]"
-                            : "hover:bg-[#fff0d2]"
-                        }`}
-                      >
-                        giọt nhẹ
-                      </button>
-                      {" "}nối{" "}
-                      <button
-                        type="button"
-                        onClick={() =>
-                          handleSelectTarget(
-                            module1Targets.find(
-                              (item) => item.id === "loi-vu-vo"
-                            )
-                          )
-                        }
-                        className={`rounded px-1 transition ${
-                          selectedTarget?.id === "loi-vu-vo"
-                            ? "bg-[#f4dfb2] text-[#7f1d2d]"
-                            : "hover:bg-[#fff0d2]"
-                        }`}
-                      >
-                        lời vu vơ
-                      </button>
-                      ...
-                    </p>
-
-                  </div>
-
-                  {/* KHỔ 4 */}
-
-                  <div>
-
-                    <p>
-                      <strong className="font-bold">
-                        Tương tư hướng lạc, phương mờ...
-                      </strong>
-                    </p>
-
-                    <p>
-                      <strong className="font-bold">
-                        Trở nghiêng gối mộng, hững hờ nằm nghe.
-                      </strong>
-                    </p>
-
-                    <p>
-                      Gió về, lòng rộng không che,
-                    </p>
-
-                    <p>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          handleSelectTarget(
-                            module1Targets.find(
-                              (item) => item.id === "hoi-may-hiu-hat"
-                            )
-                          )
-                        }
-                        className={`rounded px-1 transition ${
-                          selectedTarget?.id === "hoi-may-hiu-hat"
-                            ? "bg-[#f4dfb2] text-[#7f1d2d]"
-                            : "hover:bg-[#fff0d2]"
-                        }`}
-                      >
-                        Hơi may hiu hắt
-                      </button>
-                      {" "}bốn bề tâm tư…
-                    </p>
-
-                  </div>
-
+            <div className="px-6 py-8 md:px-10">
+              {poemTextAvailable ? (
+                <div className="text-xl italic leading-[1.9] text-gray-900">
+                  {/* Nội dung bài thơ sẽ được cập nhật tại đây. */}
                 </div>
+              ) : (
+                <div className="rounded-3xl border border-dashed border-[#d8c7b8] bg-[#fffaf2] p-6">
+                  <p className="text-sm font-semibold text-[#7f1d2d]">
+                    Nội dung bài thơ đang được cập nhật
+                  </p>
+                  <p className="mt-2 text-sm leading-6 text-gray-500">
+                    Phần nhiệm vụ luyện tập đã được cập nhật theo tài liệu
+                    Nguyệt Cầm. Khi có bản nguyên văn, chỉ cần bổ sung vào khu
+                    vực này.
+                  </p>
+                </div>
+              )}
 
-              </div>
-
-            </div>
-
-            {/* =================================================
-                CÔNG CỤ
-            ================================================= */}
-
-            <div className="border-t border-[#eadfd5] bg-[#fffdf9] px-6 py-4 md:px-10">
-
-              <div className="flex flex-wrap items-center justify-between gap-3">
-
-                <p className="text-xs text-gray-500">
-                  Em có thể ghi chú trong quá trình đọc.
+              <div className="mt-8">
+                <p className="text-xs font-bold uppercase tracking-wide text-[#a16207]">
+                  Những câu thơ / hình ảnh được sử dụng trong nhiệm vụ
                 </p>
 
-                <button
-                  type="button"
-                  onClick={() =>
-                    setShowNoteBox(
-                      !showNoteBox
-                    )
-                  }
-                  className="rounded-lg bg-[#f6eee6] px-3 py-1.5 text-xs font-semibold text-[#7f1d2d] transition hover:bg-[#f0e3da]"
-                >
-                  {showNoteBox
-                    ? "Ẩn ghi chú"
-                    : "Ghi chú"}
-                </button>
-
+                <div className="mt-3 space-y-2">
+                  {highlightedLines.map((line) => (
+                    <p
+                      key={line}
+                      className="rounded-xl bg-[#fffdf9] px-4 py-2 text-base italic leading-7 text-gray-800 ring-1 ring-[#eadfd5]"
+                      style={{ fontFamily: '"Times New Roman", Times, serif' }}
+                    >
+                      “{line}”
+                    </p>
+                  ))}
+                </div>
               </div>
 
+              <div className="mt-8 border-t border-[#eadfd5] pt-5">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <p className="text-xs text-gray-500">
+                    Em có thể ghi chú trong quá trình đọc.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setShowNoteBox((current) => !current)}
+                    className="rounded-lg bg-[#f6eee6] px-3 py-1.5 text-xs font-semibold text-[#7f1d2d]"
+                  >
+                    {showNoteBox ? "Ẩn ghi chú" : "Ghi chú"}
+                  </button>
+                </div>
+
+                {showNoteBox && (
+                  <textarea
+                    value={note}
+                    onChange={(event) => setNote(event.target.value)}
+                    rows={4}
+                    placeholder="Ghi lại điều em chú ý trong văn bản..."
+                    className="mt-3 w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm leading-6 outline-none focus:border-[#8f1d2c]"
+                  />
+                )}
+              </div>
             </div>
-
-            {/* =================================================
-                GHI CHÚ
-            ================================================= */}
-
-            {showNoteBox && (
-              <div className="border-t border-[#eadfd5] bg-[#fffdf9] px-6 py-5 md:px-10">
-
-                <label className="text-sm font-bold text-gray-700">
-                  Ghi chú của em
-                </label>
-
-                <textarea
-                  value={note}
-                  onChange={(event) =>
-                    setNote(
-                      event.target.value
-                    )
-                  }
-                  rows={4}
-                  placeholder="Ghi lại điều em chú ý trong văn bản..."
-                  className="mt-3 w-full resize-y rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm leading-6 text-gray-800 outline-none placeholder:text-gray-400 focus:border-[#8f1d2c] focus:ring-2 focus:ring-[#8f1d2c]/10"
-                />
-
-              </div>
-            )}
-
           </section>
 
-          {/* =================================================
-              RIGHT - NHIỆM VỤ
-          ================================================= */}
-
           <aside className="h-fit space-y-4 lg:sticky lg:top-28">
-
-            {/* =================================================
-                HOẠT ĐỘNG HIỆN TẠI
-            ================================================= */}
-
-            <div className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-[#eadfd5]">
-
-              <div className="flex items-center justify-between">
-
+            <div
+              id={`activity-${currentActivity.id}`}
+              className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-[#eadfd5]"
+            >
+              <div className="flex items-center justify-between gap-3">
                 <span className="rounded-lg bg-[#8f1d2c] px-2.5 py-1 text-xs font-bold text-white">
                   Hoạt động {currentActivity.id}
                 </span>
-
                 <span className="text-xs font-medium text-gray-400">
-                  {completedActivities.includes(
-                    currentActivity.id
-                  )
+                  {completedActivities.includes(currentActivity.id)
                     ? "Đã hoàn thành"
                     : "Đang thực hiện"}
                 </span>
-
               </div>
 
-              <h2 className="mt-4 text-lg font-bold text-gray-800">
+              <h2 className="mt-4 text-lg font-bold leading-7 text-gray-800">
                 {currentActivity.title}
               </h2>
 
-              <p className="mt-2 text-sm leading-6 text-gray-500">
-                {currentActivity.description}
-              </p>
-
+              <div className="mt-4 rounded-2xl bg-[#fff8ee] p-4 ring-1 ring-[#eadfd5]">
+                <p className="text-xs font-bold uppercase tracking-wide text-[#a16207]">
+                  {supportInfo.label} · {supportInfo.shortName}
+                </p>
+                <p className="mt-2 text-sm leading-6 text-gray-600">
+                  {supportInfo.description}
+                </p>
+              </div>
             </div>
 
-            {/* =================================================
-                NHIỆM VỤ / ANALYSIS CARD
-            ================================================= */}
+            <div className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-[#eadfd5]">
+              <p className="text-xs font-bold uppercase tracking-wide text-[#a16207]">
+                Nhiệm vụ
+              </p>
 
-            {activeActivity === 1 ? (
-              <div className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-[#eadfd5]">
+              {activeActivity === 1 && (
+                <>
+                  <p className="mt-3 text-sm font-semibold leading-6 text-gray-800">
+                    Chọn những hình ảnh trong bài thơ mà em muốn phân tích.
+                  </p>
 
-                <div className="flex items-center justify-between gap-3">
-
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-wide text-[#a16207]">
-                      Analysis Card
-                    </p>
-
-                    <h3 className="mt-2 font-bold leading-6 text-gray-800">
-                      Phân tích tương giao cảm giác
-                    </h3>
-                  </div>
-
-                  <span className="rounded-lg bg-[#f6eee6] px-2.5 py-1 text-xs font-semibold text-[#7f1d2d]">
-                    {savedAnalyses.length} đã lưu
-                  </span>
-
-                </div>
-
-                {!selectedTarget ? (
-                  <div className="mt-5 rounded-2xl bg-[#fff8ee] p-4 ring-1 ring-[#eadfd5]">
-
-                    <p className="text-sm font-semibold leading-6 text-gray-800">
-                      Hãy chọn một từ ngữ hoặc hình ảnh trong bài thơ để bắt đầu phân tích.
-                    </p>
-
-                    <p className="mt-2 text-xs leading-5 text-gray-500">
-                      Em có thể chọn các chi tiết gợi cảm giác mà em muốn tiếp tục tìm hiểu.
-                    </p>
-
-                  </div>
-                ) : (
-                  <>
-                    <div className="mt-5 rounded-2xl bg-[#fff8ee] p-4 ring-1 ring-[#eadfd5]">
-
-                      <p className="text-xs font-semibold uppercase tracking-wide text-[#a16207]">
-                        Chi tiết đang phân tích
-                      </p>
-
-                      <p
-                        className="mt-2 text-lg font-bold italic text-[#7f1d2d]"
-                        style={{
-                          fontFamily:
-                            '"Times New Roman", Times, serif',
-                        }}
+                  <div className="mt-3 space-y-2">
+                    {sensoryTargets.map((target) => (
+                      <button
+                        key={target}
+                        type="button"
+                        onClick={() => toggleTarget(target)}
+                        className={`w-full rounded-xl border px-3 py-2 text-left text-sm italic transition ${
+                          selectedTargets.includes(target)
+                            ? "border-[#8f1d2c] bg-[#f6eee6] text-[#7f1d2d]"
+                            : "border-gray-200 bg-white text-gray-600 hover:border-[#d8b6a4]"
+                        }`}
                       >
-                        “{selectedTarget.label}”
-                      </p>
+                        <span className="mr-2">
+                          {selectedTargets.includes(target) ? "✓" : "○"}
+                        </span>
+                        “{target}”
+                      </button>
+                    ))}
+                  </div>
 
+                  {selectedTargets.length > 0 && (
+                    <div className="mt-4 rounded-2xl bg-[#fffaf2] p-4">
+                      <p className="text-xs font-bold uppercase tracking-wide text-[#a16207]">
+                        Hình ảnh đã chọn
+                      </p>
+                      <ul className="mt-2 space-y-1 text-xs leading-5 text-gray-600">
+                        {selectedTargets.map((target) => (
+                          <li key={target}>• {target}</li>
+                        ))}
+                      </ul>
                     </div>
+                  )}
+                </>
+              )}
 
-                    <div className="mt-5">
-
-                      <p className="text-sm font-bold text-gray-800">
-                        1. Em nhận diện những giác quan nào?
+              <div className="mt-5 space-y-5">
+                {activityPrompts[activeActivity][supportLevel].map(
+                  (prompt, index) => (
+                    <div key={`${activeActivity}-${index}`}>
+                      <p className="text-sm font-bold leading-6 text-gray-800">
+                        Bước {index + 1}
                       </p>
-
-                      <p className="mt-1 text-xs leading-5 text-gray-500">
-                        Chọn các giác quan mà em cho rằng có liên quan đến cách diễn đạt này.
-                      </p>
-
-                      <div className="mt-3 grid grid-cols-2 gap-2">
-
-                        {senseOptions.map((sense) => {
-                          const selected =
-                            selectedSenses.includes(sense)
-
-                          return (
-                            <button
-                              key={sense}
-                              type="button"
-                              onClick={() =>
-                                handleToggleSense(sense)
-                              }
-                              className={`rounded-xl border px-3 py-2 text-left text-xs font-semibold transition ${
-                                selected
-                                  ? "border-[#8f1d2c] bg-[#f6eee6] text-[#7f1d2d]"
-                                  : "border-gray-200 bg-white text-gray-600 hover:border-[#d8b6a4]"
-                              }`}
-                            >
-                              <span className="mr-1.5">
-                                {selected ? "✓" : "○"}
-                              </span>
-                              {sense}
-                            </button>
-                          )
-                        })}
-
-                      </div>
-
-                    </div>
-
-                    <div className="mt-5">
-
-                      <p className="text-sm font-bold text-gray-800">
-                        2. Căn cứ của em
+                      <p className="mt-1 text-sm leading-6 text-gray-600">
+                        {prompt}
                       </p>
 
                       <textarea
-                        value={analysisReason}
+                        value={getAnswer(activeActivity, index)}
                         onChange={(event) =>
-                          setAnalysisReason(
-                            event.target.value
+                          updateAnswer(
+                            activeActivity,
+                            index,
+                            event.target.value,
                           )
                         }
-                        rows={4}
-                        placeholder="Em dựa vào từ ngữ, hình ảnh hoặc dấu hiệu nào trong đoạn thơ?"
+                        rows={5}
+                        placeholder="Viết câu trả lời của em..."
                         className="mt-2 w-full resize-y rounded-2xl border border-gray-200 bg-[#fffdf9] px-4 py-3 text-sm leading-6 text-gray-800 outline-none placeholder:text-gray-400 focus:border-[#8f1d2c] focus:ring-2 focus:ring-[#8f1d2c]/10"
                       />
-
                     </div>
-
-                    <div className="mt-5">
-
-                      <p className="text-sm font-bold text-gray-800">
-                        3. Hiệu quả biểu đạt
-                      </p>
-
-                      <textarea
-                        value={expressionEffect}
-                        onChange={(event) =>
-                          setExpressionEffect(
-                            event.target.value
-                          )
-                        }
-                        rows={4}
-                        placeholder="Theo em, cách diễn đạt này góp phần thể hiện hình tượng, cảm xúc hoặc ý nghĩa gì?"
-                        className="mt-2 w-full resize-y rounded-2xl border border-gray-200 bg-[#fffdf9] px-4 py-3 text-sm leading-6 text-gray-800 outline-none placeholder:text-gray-400 focus:border-[#8f1d2c] focus:ring-2 focus:ring-[#8f1d2c]/10"
-                      />
-
-                    </div>
-
-                    <button
-                      type="button"
-                      onClick={handleSaveAnalysis}
-                      className="mt-5 w-full rounded-2xl bg-[#8f1d2c] px-5 py-3 font-semibold text-white transition hover:bg-[#741624]"
-                    >
-                      Lưu phân tích
-                    </button>
-
-                  </>
+                  ),
                 )}
-
-                <div className="mt-5 border-t border-[#eadfd5] pt-4">
-
-                  <p className="text-xs leading-5 text-gray-500">
-                    Hệ thống không đưa đáp án trực tiếp. Em hãy dựa vào bằng chứng trong văn bản để tự giải thích.
-                  </p>
-
-                </div>
-
               </div>
-            ) : (
-              <div className="rounded-3xl bg-white p-5 shadow-sm ring-1 ring-[#eadfd5]">
 
-                <p className="text-xs font-semibold uppercase tracking-wide text-[#a16207]">
-                  Nhiệm vụ
+              <div className="mt-5 rounded-2xl bg-[#fff8ee] p-4">
+                <p className="text-xs font-bold uppercase tracking-wide text-[#a16207]">
+                  Gợi ý hỗ trợ
                 </p>
-
-                <h3 className="mt-3 font-semibold leading-6 text-gray-800">
-                  Nội dung chi tiết của hoạt động này sẽ được triển khai ở bước tiếp theo.
-                </h3>
-
-                <p className="mt-3 text-xs leading-5 text-gray-500">
-                  [CẦN XÁC NHẬN VỚI NHÓM NGHIÊN CỨU]
-                </p>
-
-              </div>
-            )}
-
-            <button
-              type="button"
-              onClick={handleCompleteActivity}
-              disabled={completedActivities.includes(currentActivity.id)}
-              className={`w-full rounded-2xl px-5 py-3 font-semibold transition ${
-                completedActivities.includes(currentActivity.id)
-                  ? "cursor-default bg-green-50 text-green-700"
-                  : "bg-[#8f1d2c] text-white hover:bg-[#741624]"
-              }`}
-            >
-              {completedActivities.includes(currentActivity.id)
-                ? "Đã hoàn thành hoạt động"
-                : activeActivity === 1
-                  ? "Hoàn thành hoạt động 1"
-                  : `Hoàn thành hoạt động ${activeActivity}`}
-            </button>
-
-            {/* =================================================
-                MỨC HỖ TRỢ
-            ================================================= */}
-
-            <div className="rounded-3xl bg-[#fff8ee] p-5 ring-1 ring-[#eadfd5]">
-
-              <div className="flex items-center justify-between">
-
-                <div>
-
-                  <p className="text-xs font-semibold uppercase tracking-wide text-[#a16207]">
-                    Mức hỗ trợ
-                  </p>
-
-                  <p className="mt-1 font-bold text-[#7f1d2d]">
-                    {supportInfo.label}
-                  </p>
-
-                </div>
-
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#f4dfb2] text-sm font-bold text-[#7f1d2d]">
-                  2
-                </div>
-
+                <ul className="mt-2 space-y-2 text-xs leading-5 text-gray-600">
+                  {supportHints[supportLevel].map((hint) => (
+                    <li key={hint}>• {hint}</li>
+                  ))}
+                </ul>
               </div>
 
-              <p className="mt-3 text-xs leading-5 text-gray-500">
-                Em có thể sử dụng các gợi ý được cung cấp
-                trong quá trình thực hiện nhiệm vụ.
-              </p>
-
+              <button
+                type="button"
+                onClick={handleCompleteActivity}
+                className="mt-5 w-full rounded-2xl bg-[#8f1d2c] px-5 py-3 font-semibold text-white transition hover:bg-[#741624]"
+              >
+                {activeActivity === activities.length
+                  ? "Hoàn thành luyện tập"
+                  : "Hoàn thành hoạt động"}
+              </button>
             </div>
-
           </aside>
-
         </div>
 
-        {/* =====================================================
-            HOÀN THÀNH
-        ===================================================== */}
-
-        {completedActivities.length ===
-          activities.length && (
+        {completedActivities.length === activities.length && (
           <div className="mt-6 rounded-3xl bg-white p-5 shadow-sm ring-1 ring-[#eadfd5]">
-
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-
               <div>
-
                 <p className="font-bold text-gray-800">
                   Em đã hoàn thành 5 hoạt động
                 </p>
-
                 <p className="mt-1 text-sm text-gray-500">
-                  Hãy chuyển sang bước tiếp theo để
-                  xem kết quả luyện tập.
+                  Hãy chuyển sang bước tiếp theo để xem kết quả luyện tập.
                 </p>
-
               </div>
 
               <button
@@ -1081,14 +643,10 @@ function LearningWorkspace() {
               >
                 Xem kết quả
               </button>
-
             </div>
-
           </div>
         )}
-
       </main>
-
     </div>
   )
 }

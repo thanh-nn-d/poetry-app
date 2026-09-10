@@ -17,6 +17,7 @@ import AssessmentResult from "./pages/teacher/AssessmentResult"
 import Dashboard from "./pages/teacher/Dashboard"
 import StudentProfile from "./pages/teacher/StudentProfile"
 import Feedback from "./pages/teacher/Feedback"
+import StudentHome from "./pages/student/StudentHome"
 
 export default function App() {
   return (
@@ -27,6 +28,7 @@ export default function App() {
         <Route path="/register" element={<Register />} />
 
         {/* Student */}
+        <Route path="/student/home" element={<StudentHome />} />
         <Route path="/student/assessment" element={<Assessment />} />
         <Route path="/student/assessment/reading" element={<ReadingTest />} />
         <Route path="/student/texts" element={<TextSelection />} />

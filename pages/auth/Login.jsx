@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react"
 import { Link, useLocation, useNavigate } from "react-router-dom"
-import { getRolePath, loginAccount } from "../../auth"
+import { loginAccount } from "../../auth"
 
 export default function Login() {
   const navigate = useNavigate()
   const location = useLocation()
+
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
@@ -12,7 +13,11 @@ export default function Login() {
 
   useEffect(() => {
     if (location.state?.message) {
-      window.history.replaceState({}, document.title, window.location.pathname)
+      window.history.replaceState(
+        {},
+        document.title,
+        window.location.pathname,
+      )
     }
   }, [location.state])
 
@@ -26,31 +31,65 @@ export default function Login() {
     }
 
     const result = loginAccount(username, password)
+
     if (!result.success) {
       setError(result.message)
       return
     }
 
-    navigate(getRolePath(result.account.role), { replace: true })
+    // =========================
+    // PHÂN QUYỀN ĐĂNG NHẬP
+    // =========================
+
+    if (result.account.role === "student") {
+      navigate("/student/home", { replace: true })
+      return
+    }
+
+    if (result.account.role === "teacher") {
+      navigate("/teacher", { replace: true })
+      return
+    }
+
+    setError("Tài khoản không có quyền truy cập.")
   }
 
   return (
     <div className="min-h-screen bg-[#faf8f3] flex items-center justify-center px-4">
       <div className="w-full max-w-md">
+
+        {/* Logo */}
         <div className="text-center mb-8">
           <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-[#8f1d2c] text-3xl font-bold text-white">
             NV
           </div>
-          <h1 className="text-2xl font-bold text-[#7f1d2d]">Luyện tập đọc hiểu thơ</h1>
-          <p className="mt-2 text-sm text-gray-500">Hệ thống hỗ trợ luyện tập đọc hiểu thơ</p>
+
+          <h1 className="text-2xl font-bold text-[#7f1d2d]">
+            Luyện tập đọc hiểu thơ
+          </h1>
+
+          <p className="mt-2 text-sm text-gray-500">
+            Hệ thống hỗ trợ luyện tập đọc hiểu thơ
+          </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="rounded-2xl bg-white p-8 shadow-lg">
-          <h2 className="mb-6 text-xl font-semibold text-gray-800">Đăng nhập</h2>
+        {/* Form */}
+        <form
+          onSubmit={handleSubmit}
+          className="rounded-2xl bg-white p-8 shadow-lg"
+        >
+          <h2 className="mb-6 text-xl font-semibold text-gray-800">
+            Đăng nhập
+          </h2>
 
           <div className="space-y-5">
+
+            {/* Username */}
             <div>
-              <label className="mb-2 block text-sm font-medium text-gray-700">Tên đăng nhập</label>
+              <label className="mb-2 block text-sm font-medium text-gray-700">
+                Tên đăng nhập
+              </label>
+
               <input
                 type="text"
                 value={username}
@@ -64,8 +103,12 @@ export default function Login() {
               />
             </div>
 
+            {/* Password */}
             <div>
-              <label className="mb-2 block text-sm font-medium text-gray-700">Mật khẩu</label>
+              <label className="mb-2 block text-sm font-medium text-gray-700">
+                Mật khẩu
+              </label>
+
               <input
                 type="password"
                 value={password}
@@ -80,14 +123,21 @@ export default function Login() {
             </div>
           </div>
 
+          {/* Success */}
           {success && (
-            <div className="mt-4 rounded-xl bg-green-50 px-4 py-3 text-sm text-green-700">{success}</div>
+            <div className="mt-4 rounded-xl bg-green-50 px-4 py-3 text-sm text-green-700">
+              {success}
+            </div>
           )}
 
+          {/* Error */}
           {error && (
-            <div className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>
+            <div className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
+              {error}
+            </div>
           )}
 
+          {/* Login button */}
           <button
             type="submit"
             className="mt-5 w-full rounded-xl bg-[#8f1d2c] py-3 font-semibold text-white transition hover:bg-[#741624]"
@@ -95,17 +145,30 @@ export default function Login() {
             Đăng nhập
           </button>
 
+          {/* Register */}
           <div className="mt-6 text-center text-sm text-gray-500">
             Chưa có tài khoản?{" "}
-            <Link to="/register" className="font-semibold text-[#8f1d2c] hover:underline">
+            <Link
+              to="/register"
+              className="font-semibold text-[#8f1d2c] hover:underline"
+            >
               Đăng ký
             </Link>
           </div>
 
+          {/* Demo accounts */}
           <div className="mt-5 rounded-xl bg-gray-50 px-4 py-3 text-xs text-gray-500">
-            <p className="font-semibold text-gray-700">Tài khoản mẫu để BGK dùng thử</p>
-            <p className="mt-1">HỌC SINH: hocsinh / 123456</p>
-            <p>GIÁO VIÊN: giaovien / 123456</p>
+            <p className="font-semibold text-gray-700">
+              Tài khoản mẫu để BGK dùng thử
+            </p>
+
+            <p className="mt-1">
+              HỌC SINH: hocsinh / 123456
+            </p>
+
+            <p>
+              GIÁO VIÊN: giaovien / 123456
+            </p>
           </div>
         </form>
       </div>
