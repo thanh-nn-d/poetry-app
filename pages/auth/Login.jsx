@@ -157,18 +157,55 @@ export default function Login() {
           </div>
 
           {/* Demo accounts */}
-          <div className="mt-5 rounded-xl bg-gray-50 px-4 py-3 text-xs text-gray-500">
+          <div className="mt-5 rounded-xl bg-gray-50 px-4 py-4 text-xs text-gray-500">
             <p className="font-semibold text-gray-700">
               Tài khoản mẫu để BGK dùng thử
             </p>
 
-            <p className="mt-1">
-              HỌC SINH: hocsinh / 123456
-            </p>
+            {/* Student - chưa test */}
+            <div className="mt-3">
+              <p className="font-semibold text-[#7f1d2d]">
+                HỌC SINH — Chưa làm test đầu vào
+              </p>
+              <p className="mt-1">
+                Tài khoản: <span className="font-medium">hocsinh</span>
+              </p>
+              <p>
+                Mật khẩu: <span className="font-medium">123456</span>
+              </p>
+              <p className="mt-1 text-gray-400">
+                → Bắt đầu từ Mức 1 – Hỗ trợ cao
+              </p>
+            </div>
 
-            <p>
-              GIÁO VIÊN: giaovien / 123456
-            </p>
+            {/* Student - level 3 */}
+            <div className="mt-4 border-t border-gray-200 pt-3">
+              <p className="font-semibold text-[#7f1d2d]">
+                HỌC SINH — Đã test đầu vào
+              </p>
+              <p className="mt-1">
+                Tài khoản: <span className="font-medium">hocsinh3</span>
+              </p>
+              <p>
+                Mật khẩu: <span className="font-medium">123456</span>
+              </p>
+              <p className="mt-1 text-gray-400">
+                → Mức 3 – Hỗ trợ thấp
+              </p>
+            </div>
+
+            {/* Teacher */}
+            <div className="mt-4 border-t border-gray-200 pt-3">
+              <p className="font-semibold text-[#7f1d2d]">
+                GIÁO VIÊN
+              </p>
+              <p className="mt-1">
+                Tài khoản: <span className="font-medium">giaovien</span>
+              </p>
+              <p>
+                Mật khẩu: <span className="font-medium">123456</span>
+              </p>
+            </div>
           </div>
         </form>
       </div>
