@@ -5,6 +5,7 @@ import {
   getSupportLevel,
   loadLearningProgress,
 } from "./supportLevel"
+import { logoutAccount } from "../../auth"
 
 export default function StudentHome() {
   const navigate = useNavigate()
@@ -33,33 +34,62 @@ export default function StudentHome() {
     navigate("/student/texts")
   }
 
+  const handleLogout = () => {
+    logoutAccount()
+    navigate("/", { replace: true })
+  }
+
   return (
     <div className="min-h-screen bg-[#faf8f3] text-gray-800">
       {/* Header */}
       <header className="border-b border-[#eadfd5] bg-white">
         <div className="mx-auto max-w-6xl px-6 py-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#a16207]">
-            LUYỆN TẬP ĐỌC HIỂU THƠ
-          </p>
-
-          <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-[#7f1d2d]">
-                Trang chủ học sinh
-              </h1>
-
-              <p className="mt-1 text-sm text-gray-500">
-                Bắt đầu hoặc tiếp tục quá trình luyện tập của em.
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#a16207]">
+                LUYỆN TẬP ĐỌC HIỂU THƠ
               </p>
+
+              <div className="mt-2">
+                <h1 className="text-2xl font-bold text-[#7f1d2d]">
+                  Trang chủ học sinh
+                </h1>
+
+                <p className="mt-1 text-sm text-gray-500">
+                  Bắt đầu hoặc tiếp tục quá trình luyện tập của em.
+                </p>
+              </div>
             </div>
 
-            {/* Chỉ hiển thị mức hỗ trợ khi đã làm bài */}
-            {hasAssessment && (
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Trang chủ */}
+              <button
+                type="button"
+                onClick={() => navigate("/student/home")}
+                className="rounded-xl bg-[#8f1d2c] px-4 py-2 text-sm font-semibold text-white"
+              >
+                Trang chủ
+              </button>
+
+              {/* Đăng xuất */}
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="rounded-xl border border-[#eadfd5] bg-white px-4 py-2 text-sm font-semibold text-[#7f1d2d] hover:bg-[#fffaf3]"
+              >
+                Đăng xuất
+              </button>
+            </div>
+          </div>
+
+          {/* Mức hỗ trợ */}
+          {hasAssessment && (
+            <div className="mt-4">
               <span className="inline-flex w-fit items-center rounded-full border border-[#ead7c8] bg-[#fffaf3] px-4 py-2 text-sm font-semibold text-[#7f1d2d]">
                 Mức hỗ trợ {level}
               </span>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </header>
 

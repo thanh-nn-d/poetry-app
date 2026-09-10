@@ -1,15 +1,17 @@
 import { useMemo, useState } from "react"
+import { useNavigate } from "react-router-dom"
+import { logoutAccount } from "../../auth"
 
 // =========================================================
-// MOCK BÀI LÀM CỦA HỌC SINH
+// DỮ LIỆU BÀI LÀM
+// =========================================================
+//
+// Hiện chưa kết nối backend nên để mặc định rỗng.
+// Khi có bài làm thật, dữ liệu học sinh có thể được
+// lấy từ API và truyền vào phần chấm bài.
 // =========================================================
 
-const student = {
-  name: "Nguyễn Minh Anh",
-  className: "10A1",
-  submittedAt: "09/09/2026 - 08:42",
-  duration: "38 phút",
-}
+const student = null
 
 // =========================================================
 // RUBRIC
@@ -67,7 +69,7 @@ const questions = [
       {
         id: "C3b",
         description:
-          "Lí giải được vì sao nhân vật trữ tình cảm nhận “trời nặng nặng”.",
+          "Lí giải được vì sao nhân vật trữ tình cảm nhận “trời nằng nặng”.",
         score: 0.25,
       },
     ],
@@ -300,23 +302,90 @@ const questions = [
 // COMPONENT
 // =========================================================
 
-function Grading() {
-  // scores chỉ chứa những tiêu chí ĐÃ được nhập điểm.
-  //
-  // Ví dụ:
-  // {}
-  // → chưa chấm
-  //
-  // { C1a: 0 }
-  // → đã chấm 0 điểm
-  //
-  // { C1a: 0.2 }
-  // → đã chấm 0.2 điểm
+export default function Grading() {
+  const nav = useNavigate()
 
   const [scores, setScores] = useState({})
   const [feedback, setFeedback] = useState({})
   const [activeQuestion, setActiveQuestion] = useState("C1")
   const [saved, setSaved] = useState(false)
+
+  // =========================================================
+  // ĐĂNG XUẤT
+  // =========================================================
+
+  const handleLogout = () => {
+    logoutAccount()
+    nav("/", { replace: true })
+  }
+
+  // =========================================================
+  // TRẠNG THÁI MẶC ĐỊNH
+  // =========================================================
+
+  if (!student) {
+    return (
+      <div className="min-h-screen bg-[#faf8f3] text-gray-800">
+        <header className="sticky top-0 z-40 border-b border-[#eadfd5] bg-white/95 backdrop-blur">
+          <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wide text-[#a16207]">
+                GIÁO VIÊN
+              </p>
+
+              <h1 className="text-xl font-bold text-[#7f1d2d]">
+                Chấm bài kiểm tra
+              </h1>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => nav("/teacher")}
+                className="rounded-xl border border-[#eadfd5] px-4 py-2 text-sm font-semibold text-[#7f1d2d] hover:bg-[#fffaf3]"
+              >
+                Dashboard
+              </button>
+
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="text-sm font-semibold text-[#7f1d2d] underline underline-offset-4 hover:text-[#a16207]"
+              >
+                Đăng xuất
+              </button>
+            </div>
+          </div>
+        </header>
+
+        <main className="mx-auto flex max-w-4xl items-center justify-center px-6 py-16">
+          <section className="w-full rounded-3xl bg-white p-10 text-center shadow-sm ring-1 ring-[#eadfd5]">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#fffaf3] text-2xl">
+              📝
+            </div>
+
+            <h2 className="mt-5 text-2xl font-bold text-[#7f1d2d]">
+              Chưa có bài làm cần chấm
+            </h2>
+
+            <p className="mx-auto mt-3 max-w-lg text-sm leading-6 text-gray-500">
+              Hiện chưa có bài làm của học sinh được gửi đến hệ thống.
+              Bài làm sẽ xuất hiện tại đây sau khi học sinh hoàn thành
+              và nộp bài kiểm tra.
+            </p>
+
+            <button
+              type="button"
+              onClick={() => nav("/teacher")}
+              className="mt-6 rounded-xl bg-[#8f1d2c] px-5 py-3 font-semibold text-white hover:bg-[#741624]"
+            >
+              Về Dashboard
+            </button>
+          </section>
+        </main>
+      </div>
+    )
+  }
 
   // =========================================================
   // TỔNG SỐ TIÊU CHÍ
@@ -326,7 +395,7 @@ function Grading() {
     return questions.reduce(
       (total, question) =>
         total + question.rubric.length,
-      0
+      0,
     )
   }, [])
 
@@ -351,7 +420,7 @@ function Grading() {
   const totalScore = useMemo(() => {
     return Object.values(scores).reduce(
       (total, score) => total + Number(score || 0),
-      0
+      0,
     )
   }, [scores])
 
@@ -362,7 +431,7 @@ function Grading() {
   const maxScore = useMemo(() => {
     return questions.reduce(
       (total, question) => total + question.maxScore,
-      0
+      0,
     )
   }, [])
 
@@ -385,7 +454,7 @@ function Grading() {
 
         return total + Number(score)
       },
-      0
+      0,
     )
   }
 
@@ -398,7 +467,7 @@ function Grading() {
       (criterion) =>
         scores[criterion.id] !== undefined &&
         scores[criterion.id] !== null &&
-        scores[criterion.id] !== ""
+        scores[criterion.id] !== "",
     )
   }
 
@@ -409,9 +478,8 @@ function Grading() {
   const handleScoreChange = (
     criterionId,
     value,
-    max
+    max,
   ) => {
-    // Cho phép xóa ô điểm trong lúc nhập
     if (value === "") {
       setScores((current) => {
         const next = { ...current }
@@ -428,16 +496,13 @@ function Grading() {
 
     const numericValue = Number(value)
 
-    // Không xử lý giá trị không hợp lệ
     if (Number.isNaN(numericValue)) {
       return
     }
 
-    // Không cho điểm âm
-    // Không cho vượt quá điểm tối đa
     const validScore = Math.min(
       Math.max(numericValue, 0),
-      max
+      max,
     )
 
     setScores((current) => ({
@@ -454,7 +519,7 @@ function Grading() {
 
   const handleFeedbackChange = (
     questionId,
-    value
+    value,
   ) => {
     setFeedback((current) => ({
       ...current,
@@ -471,7 +536,7 @@ function Grading() {
   const handleSave = () => {
     if (!allGraded) {
       alert(
-        `Vui lòng chấm đủ ${totalCriteria} tiêu chí trước khi lưu kết quả.`
+        `Vui lòng chấm đủ ${totalCriteria} tiêu chí trước khi lưu kết quả.`,
       )
 
       return
@@ -482,25 +547,38 @@ function Grading() {
 
   return (
     <div className="min-h-screen bg-[#faf8f3]">
-
       {/* =====================================================
           HEADER
       ===================================================== */}
 
       <header className="sticky top-0 z-40 border-b border-[#eadfd5] bg-white/95 backdrop-blur">
-
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-
           <div>
-
             <p className="text-xs font-semibold uppercase tracking-wide text-[#a16207]">
-              Giáo viên
+              GIÁO VIÊN
             </p>
 
             <h1 className="text-xl font-bold text-[#7f1d2d]">
-              Chấm bài kiểm tra đầu vào
+              Chấm bài kiểm tra
             </h1>
+          </div>
 
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={() => nav("/teacher")}
+              className="rounded-xl border border-[#eadfd5] px-4 py-2 text-sm font-semibold text-[#7f1d2d] hover:bg-[#fffaf3]"
+            >
+              Dashboard
+            </button>
+
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="text-sm font-semibold text-[#7f1d2d] underline underline-offset-4 hover:text-[#a16207]"
+            >
+              Đăng xuất
+            </button>
           </div>
 
           <button
@@ -510,33 +588,22 @@ function Grading() {
           >
             Lưu kết quả
           </button>
-
         </div>
-
       </header>
 
-      {/* =====================================================
-          MAIN
-      ===================================================== */}
-
       <main className="mx-auto max-w-7xl px-6 py-8">
-
         {/* ===================================================
             THÔNG TIN HỌC SINH
         =================================================== */}
 
         <section className="mb-6 rounded-3xl bg-white p-6 shadow-sm ring-1 ring-[#eadfd5]">
-
           <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-
             <div className="flex items-center gap-4">
-
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#f8e9c8] text-lg font-bold text-[#7f1d2d]">
                 MA
               </div>
 
               <div>
-
                 <h2 className="text-lg font-bold text-gray-800">
                   {student.name}
                 </h2>
@@ -546,15 +613,11 @@ function Grading() {
                   {" · "}
                   Nộp lúc {student.submittedAt}
                 </p>
-
               </div>
-
             </div>
 
             <div className="flex gap-3">
-
               <div className="rounded-2xl bg-[#fffaf0] px-5 py-3 text-center">
-
                 <p className="text-xs text-gray-500">
                   Thời gian làm
                 </p>
@@ -562,29 +625,24 @@ function Grading() {
                 <p className="mt-1 font-bold text-[#7f1d2d]">
                   {student.duration}
                 </p>
-
               </div>
 
               <div className="rounded-2xl bg-[#f8f5ef] px-5 py-3 text-center">
-
                 <p className="text-xs text-gray-500">
                   Điểm hiện tại
                 </p>
 
                 <p className="mt-1 text-xl font-bold text-[#7f1d2d]">
                   {totalScore.toFixed(2)}
+
                   <span className="text-sm font-medium text-gray-400">
                     {" "}
                     / {maxScore.toFixed(2)}
                   </span>
                 </p>
-
               </div>
-
             </div>
-
           </div>
-
         </section>
 
         {/* ===================================================
@@ -592,21 +650,17 @@ function Grading() {
         =================================================== */}
 
         <div className="grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)_280px]">
-
           {/* =================================================
               SIDEBAR
           ================================================= */}
 
           <aside className="h-fit rounded-3xl bg-white p-4 shadow-sm ring-1 ring-[#eadfd5] lg:sticky lg:top-28">
-
             <p className="px-3 py-2 text-xs font-bold uppercase tracking-wide text-gray-400">
               Danh sách câu hỏi
             </p>
 
             <div className="space-y-1">
-
               {questions.map((question) => {
-
                 const questionScore =
                   getQuestionScore(question)
 
@@ -629,9 +683,7 @@ function Grading() {
                         : "text-gray-700 hover:bg-[#faf8f3]"
                     }`}
                   >
-
                     <div className="flex items-center gap-3">
-
                       <span
                         className={`flex h-8 w-8 items-center justify-center rounded-lg text-xs font-bold ${
                           isActive
@@ -639,20 +691,15 @@ function Grading() {
                             : "bg-[#f6eee6] text-[#7f1d2d]"
                         }`}
                       >
-                        {question.id.replace(
-                          "C",
-                          ""
-                        )}
+                        {question.id.replace("C", "")}
                       </span>
 
                       <span className="text-sm font-medium">
                         {question.id}
                       </span>
-
                     </div>
 
                     <div className="flex items-center gap-2">
-
                       <span
                         className={`text-xs font-semibold ${
                           isActive
@@ -674,19 +721,13 @@ function Grading() {
                               : "text-gray-400"
                         }`}
                       >
-                        {isCompleted
-                          ? "✓"
-                          : "○"}
+                        {isCompleted ? "✓" : "○"}
                       </span>
-
                     </div>
-
                   </button>
                 )
               })}
-
             </div>
-
           </aside>
 
           {/* =================================================
@@ -694,14 +735,12 @@ function Grading() {
           ================================================= */}
 
           <section className="space-y-6">
-
             {questions
               .filter(
                 (question) =>
-                  question.id === activeQuestion
+                  question.id === activeQuestion,
               )
               .map((question) => {
-
                 const questionScore =
                   getQuestionScore(question)
 
@@ -713,17 +752,10 @@ function Grading() {
                     key={question.id}
                     className="overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-[#eadfd5]"
                   >
-
-                    {/* =========================================
-                        HEADER CÂU
-                    ========================================= */}
-
+                    {/* HEADER CÂU */}
                     <div className="border-b border-[#eadfd5] bg-[#fffdf9] px-6 py-5 md:px-8">
-
                       <div className="flex items-center justify-between">
-
                         <div className="flex items-center gap-3">
-
                           <span className="rounded-lg bg-[#8f1d2c] px-3 py-1.5 text-sm font-bold text-white">
                             {question.id}
                           </span>
@@ -737,11 +769,9 @@ function Grading() {
                               Chưa chấm
                             </span>
                           )}
-
                         </div>
 
                         <div className="text-right">
-
                           <p className="text-xs text-gray-400">
                             Điểm câu
                           </p>
@@ -752,80 +782,52 @@ function Grading() {
                             <span className="text-sm font-medium text-gray-400">
                               {" "}
                               /{" "}
-                              {question.maxScore.toFixed(
-                                2
-                              )}
+                              {question.maxScore.toFixed(2)}
                             </span>
                           </p>
-
                         </div>
-
                       </div>
-
                     </div>
 
-                    {/* =========================================
-                        CÂU TRẢ LỜI
-                    ========================================= */}
-
+                    {/* CÂU TRẢ LỜI */}
                     <div className="px-6 py-6 md:px-8">
-
                       <h3 className="mb-3 text-sm font-bold uppercase tracking-wide text-gray-500">
                         Câu trả lời của HỌC SINH
                       </h3>
 
                       <div className="rounded-2xl border border-gray-200 bg-[#fffdf9] px-5 py-4">
-
                         <p className="whitespace-pre-line text-[16px] leading-8 text-gray-800">
                           {question.answer}
                         </p>
-
                       </div>
-
                     </div>
 
-                    {/* =========================================
-                        RUBRIC
-                    ========================================= */}
-
+                    {/* RUBRIC */}
                     <div className="border-t border-[#eadfd5] px-6 py-6 md:px-8">
-
                       <div className="mb-5">
-
                         <h3 className="text-lg font-bold text-gray-800">
                           Tiêu chí chấm
                         </h3>
 
                         <p className="mt-1 text-sm text-gray-500">
-                          Giáo viên nhập điểm dựa trên
-                          rubric. Điểm có thể linh hoạt
-                          trong khoảng từ 0 đến điểm tối đa
-                          của từng tiêu chí.
+                          Giáo viên nhập điểm dựa trên rubric.
+                          Điểm có thể linh hoạt trong khoảng từ 0
+                          đến điểm tối đa của từng tiêu chí.
                         </p>
-
                       </div>
 
                       <div className="space-y-3">
-
                         {question.rubric.map(
                           (criterion) => {
-
                             const hasScore =
-                              scores[
-                                criterion.id
-                              ] !== undefined &&
-                              scores[
-                                criterion.id
-                              ] !== null &&
-                              scores[
-                                criterion.id
-                              ] !== ""
+                              scores[criterion.id] !==
+                                undefined &&
+                              scores[criterion.id] !== null &&
+                              scores[criterion.id] !== ""
 
                             const currentScore =
                               hasScore
-                                ? scores[
-                                    criterion.id
-                                  ]
+                                ? scores[criterion.id]
                                 : ""
 
                             return (
@@ -833,58 +835,40 @@ function Grading() {
                                 key={criterion.id}
                                 className="rounded-2xl border border-gray-200 bg-[#fffdf9] p-4"
                               >
-
                                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-
                                   <div className="flex-1">
-
                                     <div className="mb-1 flex items-start gap-2">
-
                                       <span className="mt-0.5 text-xs font-bold text-[#8f1d2c]">
-                                        {
-                                          criterion.id
-                                        }
+                                        {criterion.id}
                                       </span>
 
                                       <span className="text-sm font-medium leading-6 text-gray-800">
-                                        {
-                                          criterion.description
-                                        }
+                                        {criterion.description}
                                       </span>
-
                                     </div>
 
                                     <p className="text-xs text-gray-400">
                                       Tối đa{" "}
                                       {criterion.score.toFixed(
-                                        2
+                                        2,
                                       )}{" "}
                                       điểm
                                     </p>
-
                                   </div>
 
                                   <div className="flex shrink-0 items-center gap-2">
-
                                     <input
                                       type="number"
                                       min="0"
-                                      max={
-                                        criterion.score
-                                      }
+                                      max={criterion.score}
                                       step="any"
-                                      value={
-                                        currentScore
-                                      }
+                                      value={currentScore}
                                       placeholder="0"
-                                      onChange={(
-                                        event
-                                      ) =>
+                                      onChange={(event) =>
                                         handleScoreChange(
                                           criterion.id,
-                                          event.target
-                                            .value,
-                                          criterion.score
+                                          event.target.value,
+                                          criterion.score,
                                         )
                                       }
                                       className={`w-24 rounded-xl border bg-white px-3 py-2 text-center text-sm font-semibold outline-none transition ${
@@ -897,56 +881,42 @@ function Grading() {
                                     <span className="text-sm text-gray-400">
                                       /{" "}
                                       {criterion.score.toFixed(
-                                        2
+                                        2,
                                       )}
                                     </span>
-
                                   </div>
-
                                 </div>
-
                               </div>
                             )
-                          }
+                          },
                         )}
-
                       </div>
-
                     </div>
 
-                    {/* =========================================
-                        NHẬN XÉT
-                    ========================================= */}
-
+                    {/* NHẬN XÉT */}
                     <div className="border-t border-[#eadfd5] px-6 py-6 md:px-8">
-
                       <label className="mb-2 block text-sm font-bold text-gray-700">
                         Nhận xét cho HỌC SINH
                       </label>
 
                       <textarea
                         value={
-                          feedback[
-                            question.id
-                          ] || ""
+                          feedback[question.id] || ""
                         }
                         onChange={(event) =>
                           handleFeedbackChange(
                             question.id,
-                            event.target.value
+                            event.target.value,
                           )
                         }
                         rows={4}
                         placeholder="Nhập nhận xét cho câu trả lời..."
                         className="w-full resize-y rounded-2xl border border-gray-200 bg-[#fffdf9] px-4 py-3 text-[15px] leading-7 text-gray-800 outline-none transition placeholder:text-gray-400 focus:border-[#8f1d2c] focus:ring-2 focus:ring-[#8f1d2c]/10"
                       />
-
                     </div>
-
                   </div>
                 )
               })}
-
           </section>
 
           {/* =================================================
@@ -954,19 +924,13 @@ function Grading() {
           ================================================= */}
 
           <aside className="h-fit space-y-4 lg:sticky lg:top-28">
-
-            {/* ===============================================
-                TỔNG ĐIỂM
-            =============================================== */}
-
+            {/* TỔNG ĐIỂM */}
             <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-[#eadfd5]">
-
               <p className="text-sm font-semibold text-gray-500">
                 Tổng điểm
               </p>
 
               <div className="mt-3 flex items-end gap-2">
-
                 <span className="text-4xl font-bold text-[#7f1d2d]">
                   {totalScore.toFixed(2)}
                 </span>
@@ -974,95 +938,69 @@ function Grading() {
                 <span className="pb-1 text-gray-400">
                   / {maxScore.toFixed(2)}
                 </span>
-
               </div>
 
               <div className="mt-5 h-2 overflow-hidden rounded-full bg-gray-100">
-
                 <div
                   className="h-full rounded-full bg-[#8f1d2c] transition-all"
                   style={{
                     width: `${Math.min(
-                      (totalScore / maxScore) *
-                        100,
-                      100
+                      (totalScore / maxScore) * 100,
+                      100,
                     )}%`,
                   }}
                 />
-
               </div>
 
               <p className="mt-2 text-xs text-gray-400">
-                Đã chấm {gradedCriteria}/
-                {totalCriteria} tiêu chí
+                Đã chấm {gradedCriteria}/{totalCriteria} tiêu chí
               </p>
-
             </div>
 
-            {/* ===============================================
-                TRẠNG THÁI
-            =============================================== */}
-
+            {/* TRẠNG THÁI */}
             <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-[#eadfd5]">
-
               <h3 className="font-bold text-gray-800">
                 Trạng thái chấm
               </h3>
 
               <div className="mt-4">
-
                 {allGraded ? (
                   <div className="rounded-2xl border border-green-200 bg-green-50 p-4">
-
                     <p className="font-semibold text-green-700">
                       Đã chấm đủ
                     </p>
 
                     <p className="mt-1 text-sm leading-6 text-green-600">
-                      Tất cả tiêu chí đã được nhập
-                      điểm. Có thể lưu kết quả.
+                      Tất cả tiêu chí đã được nhập điểm.
+                      Có thể lưu kết quả.
                     </p>
-
                   </div>
                 ) : (
                   <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
-
                     <p className="font-semibold text-amber-700">
                       Chưa hoàn tất
                     </p>
 
                     <p className="mt-1 text-sm leading-6 text-amber-600">
                       Còn{" "}
-                      {totalCriteria -
-                        gradedCriteria}{" "}
+                      {totalCriteria - gradedCriteria}{" "}
                       tiêu chí chưa được chấm.
                     </p>
-
                   </div>
                 )}
-
               </div>
-
             </div>
 
-            {/* ===============================================
-                TIẾN ĐỘ
-            =============================================== */}
-
+            {/* TIẾN ĐỘ */}
             <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-[#eadfd5]">
-
               <h3 className="font-bold text-gray-800">
                 Tiến độ chấm
               </h3>
 
               <div className="mt-4 space-y-3">
-
                 {questions.map((question) => {
-
                   const complete =
-                    isQuestionGraded(
-                      question
-                    )
+                    isQuestionGraded(question)
 
                   return (
                     <button
@@ -1070,12 +1008,11 @@ function Grading() {
                       type="button"
                       onClick={() =>
                         setActiveQuestion(
-                          question.id
+                          question.id,
                         )
                       }
                       className="flex w-full items-center justify-between text-sm"
                     >
-
                       <span className="text-gray-600">
                         {question.id}
                       </span>
@@ -1091,19 +1028,13 @@ function Grading() {
                           ? "Đã chấm"
                           : "Chưa chấm"}
                       </span>
-
                     </button>
                   )
                 })}
-
               </div>
-
             </div>
 
-            {/* ===============================================
-                LƯU
-            =============================================== */}
-
+            {/* LƯU */}
             <button
               type="button"
               onClick={handleSave}
@@ -1123,15 +1054,9 @@ function Grading() {
                 Đã lưu kết quả chấm.
               </div>
             )}
-
           </aside>
-
         </div>
-
       </main>
-
     </div>
   )
 }
-
-export default Grading
