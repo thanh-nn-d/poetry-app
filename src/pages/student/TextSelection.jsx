@@ -7,86 +7,30 @@ import {
   loadLearningProgress,
 } from "./supportLevel"
 
-const textsByLevel = {
-  1: [
-    {
-      id: "nguyet-cam",
-      title: "NGUYỆT CẦM",
-      author: "Xuân Diệu",
-      available: true,
-      description:
-        "Văn bản luyện tập đọc hiểu thơ có yếu tố tượng trưng. Học sinh thực hiện lần lượt 5 nội dung luyện tập theo mức hỗ trợ được xác định.",
-    },
-    {
-      id: "buon-mua-dem",
-      title: "BUỒN MƯA ĐÊM",
-      author: "Huy Cận",
-      available: false,
-      description:
-        "Văn bản đã được sử dụng cho bài kiểm tra năng lực đầu vào. Nội dung luyện tập riêng chưa được kích hoạt trong phiên bản này.",
-    },
-    {
-      id: "van-ban-3",
-      title: "Văn bản luyện tập 3",
-      author: "[CẦN XÁC NHẬN VỚI NHÓM NGHIÊN CỨU]",
-      available: false,
-      description:
-        "Ngữ liệu chưa được cung cấp trong tài liệu hiện có.",
-    },
-  ],
-  2: [
-    {
-      id: "van-ban-4",
-      title: "Văn bản luyện tập 4",
-      author: "[CẦN XÁC NHẬN VỚI NHÓM NGHIÊN CỨU]",
-      available: false,
-      description:
-        "Ngữ liệu chưa được cung cấp trong tài liệu hiện có.",
-    },
-    {
-      id: "van-ban-5",
-      title: "Văn bản luyện tập 5",
-      author: "[CẦN XÁC NHẬN VỚI NHÓM NGHIÊN CỨU]",
-      available: false,
-      description:
-        "Ngữ liệu chưa được cung cấp trong tài liệu hiện có.",
-    },
-    {
-      id: "van-ban-6",
-      title: "Văn bản luyện tập 6",
-      author: "[CẦN XÁC NHẬN VỚI NHÓM NGHIÊN CỨU]",
-      available: false,
-      description:
-        "Ngữ liệu chưa được cung cấp trong tài liệu hiện có.",
-    },
-  ],
-  3: [
-    {
-      id: "van-ban-7",
-      title: "Văn bản luyện tập 7",
-      author: "[CẦN XÁC NHẬN VỚI NHÓM NGHIÊN CỨU]",
-      available: false,
-      description:
-        "Ngữ liệu chưa được cung cấp trong tài liệu hiện có.",
-    },
-    {
-      id: "van-ban-8",
-      title: "Văn bản luyện tập 8",
-      author: "[CẦN XÁC NHẬN VỚI NHÓM NGHIÊN CỨU]",
-      available: false,
-      description:
-        "Ngữ liệu chưa được cung cấp trong tài liệu hiện có.",
-    },
-    {
-      id: "van-ban-9",
-      title: "Văn bản luyện tập 9",
-      author: "[CẦN XÁC NHẬN VỚI NHÓM NGHIÊN CỨU]",
-      available: false,
-      description:
-        "Ngữ liệu chưa được cung cấp trong tài liệu hiện có.",
-    },
-  ],
+const textBySupportLevel = {
+  1: {
+    id: "nguyet-cam",
+    title: "NGUYỆT CẦM",
+    author: "Xuân Diệu",
+    description:
+      "Bộ luyện tập đọc hiểu thơ có yếu tố tượng trưng dành cho học sinh ở Mức hỗ trợ 1, với nhiều câu hỏi dẫn dắt, gợi ý và hướng dẫn từng bước.",
+  },
+  2: {
+    id: "nguyet-cam",
+    title: "NGUYỆT CẦM",
+    author: "Xuân Diệu",
+    description:
+      "Bộ luyện tập đọc hiểu thơ có yếu tố tượng trưng dành cho học sinh ở Mức hỗ trợ 2, với các gợi ý được rút gọn để học sinh chủ động phân tích nhiều hơn.",
+  },
+  3: {
+    id: "nguyet-cam",
+    title: "NGUYỆT CẦM",
+    author: "Xuân Diệu",
+    description:
+      "Bộ luyện tập đọc hiểu thơ có yếu tố tượng trưng dành cho học sinh ở Mức hỗ trợ 3, tập trung vào việc tự khám phá, tự lí giải và tự điều chỉnh quá trình đọc hiểu.",
+  },
 }
+
 
 function LevelBadge({ level }) {
   return (
@@ -107,20 +51,19 @@ export default function TextSelection() {
   const info = getLevelInfo(level)
   const progress = loadLearningProgress()
 
-  const texts = useMemo(
-    () => textsByLevel[level] || textsByLevel[1],
+  const text = useMemo(
+    () => textBySupportLevel[level] || textBySupportLevel[1],
     [level],
   )
 
-  const availableTexts = texts.filter((text) => text.available)
-  const completedCount = texts.filter((text) =>
-    progress.completedTexts.includes(text.id),
-  ).length
+  const completed = progress.completedTexts.includes(text.id)
 
-  const startText = (text) => {
-    if (!text.available) return
-
-    localStorage.setItem("currentText", JSON.stringify(text))
+  const startText = () => {
+    localStorage.setItem(
+      "currentText",
+      JSON.stringify({ ...text, supportLevel: level }),
+    )
+    localStorage.setItem("currentSupportLevel", String(level))
     localStorage.setItem("learningStartedAt", String(Date.now()))
     navigate("/student/learning")
   }
@@ -183,85 +126,62 @@ export default function TextSelection() {
                 Văn bản luyện tập
               </h2>
               <p className="mt-1 text-sm text-gray-500">
-                Các văn bản được tổ chức theo mức hỗ trợ nhận thức hiện tại.
+                Nguyệt Cầm có bộ nhiệm vụ luyện tập riêng tương ứng với mức hỗ trợ hiện tại.
               </p>
             </div>
             <span className="hidden text-sm text-gray-500 sm:block">
-              {availableTexts.length} văn bản khả dụng
+              1 bộ luyện tập khả dụng
             </span>
           </div>
 
-          <div className="grid gap-5 md:grid-cols-3">
-            {texts.map((text, index) => {
-              const completed = progress.completedTexts.includes(text.id)
+          <div className="grid gap-5 md:grid-cols-1">
+            <article className="flex min-h-[330px] flex-col rounded-3xl border border-[#eadfd5] bg-white p-7 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md md:max-w-2xl">
+              <div className="flex items-center justify-between">
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#fff1d6] text-sm font-bold text-[#a16207]">
+                  1
+                </span>
 
-              return (
-                <article
-                  key={text.id}
-                  className={`flex min-h-[330px] flex-col rounded-3xl border bg-white p-6 shadow-sm transition ${
-                    text.available
-                      ? "border-[#eadfd5] hover:-translate-y-0.5 hover:shadow-md"
-                      : "border-dashed border-gray-300 opacity-70"
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#fff1d6] text-sm font-bold text-[#a16207]">
-                      {index + 1}
-                    </span>
+                <span className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                  completed ? "bg-green-50 text-green-700" : "bg-[#fff8ee] text-[#a16207]"
+                }`}>
+                  {completed ? "Đã hoàn thành" : "Sẵn sàng"}
+                </span>
+              </div>
 
-                    <span
-                      className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                        completed
-                          ? "bg-green-50 text-green-700"
-                          : text.available
-                            ? "bg-[#fff8ee] text-[#a16207]"
-                            : "bg-gray-100 text-gray-500"
-                      }`}
-                    >
-                      {completed
-                        ? "Đã hoàn thành"
-                        : text.available
-                          ? "Sẵn sàng"
-                          : "Chưa có nội dung"}
-                    </span>
-                  </div>
-
-                  <h3 className="mt-6 text-xl font-bold text-[#7f1d2d]">
+              <div className="mt-6 flex items-start justify-between gap-4">
+                <div>
+                  <h3 className="text-xl font-bold text-[#7f1d2d]">
                     {text.title}
                   </h3>
-
                   <p className="mt-1 text-sm italic text-gray-500">
                     {text.author}
                   </p>
+                </div>
+                <span className="shrink-0 rounded-full bg-[#f8e9c8] px-3 py-1 text-xs font-bold text-[#7f1d2d]">
+                  Bộ mức {level}
+                </span>
+              </div>
 
-                  <p className="mt-4 flex-1 text-sm leading-6 text-gray-600">
-                    {text.description}
-                  </p>
+              <p className="mt-5 flex-1 text-sm leading-6 text-gray-600">
+                {text.description}
+              </p>
 
-                  <button
-                    type="button"
-                    disabled={!text.available}
-                    onClick={() => startText(text)}
-                    className="mt-6 w-full rounded-2xl bg-[#8f1d2c] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#741624] disabled:cursor-not-allowed disabled:bg-gray-300"
-                  >
-                    {completed
-                      ? "Học lại văn bản"
-                      : text.available
-                        ? "Bắt đầu luyện tập"
-                        : "Chưa khả dụng"}
-                  </button>
-                </article>
-              )
-            })}
+              <button
+                type="button"
+                onClick={startText}
+                className="mt-6 w-full rounded-2xl bg-[#8f1d2c] px-5 py-3 font-semibold text-white transition hover:bg-[#741624]"
+              >
+                {completed ? "Học lại văn bản" : "Bắt đầu luyện tập"}
+              </button>
+            </article>
           </div>
         </section>
 
         <section className="mt-6 rounded-2xl border border-dashed border-[#dfcdbb] bg-[#fffaf3] px-5 py-4">
           <p className="text-sm leading-6 text-gray-600">
             <span className="font-semibold text-[#7f1d2d]">Lưu ý:</span>{" "}
-            hiện nội dung luyện tập khả dụng là <strong>NGUYỆT CẦM</strong>.
-            Các văn bản còn lại sẽ được bổ sung khi có dữ liệu chính thức của
-            nhóm nghiên cứu.
+            <strong>NGUYỆT CẦM</strong> có 3 bộ luyện tập tương ứng với Mức hỗ trợ 1, 2 và 3.
+            Hệ thống tự động mở đúng bộ nhiệm vụ theo mức hỗ trợ hiện tại của học sinh.
           </p>
         </section>
       </main>

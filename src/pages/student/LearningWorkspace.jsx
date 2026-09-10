@@ -46,7 +46,7 @@ const sensoryTargets = [
 ]
 
 const highlightedLines = [
-  "Trăng nhập vào đây cung / nguyệt lạnh",
+  "Trăng nhập vào đây cung nguyệt lạnh",
   "Trăng thương / trăng nhớ / hỡi trăng ngàn",
   "Đàn buồn / đàn lặng / ôi đàn chậm!",
   "Mỗi giọt rơi tàn / như lệ ngân",
@@ -434,21 +434,28 @@ function LearningWorkspace() {
 
             <div className="px-6 py-8 md:px-10">
               {poemTextAvailable ? (
-                <div className="text-xl italic leading-[1.9] text-gray-900">
-                  {/* Nội dung bài thơ sẽ được cập nhật tại đây. */}
+                <div
+                  className="text-xl italic leading-[1.9] text-gray-900 md:text-[22px]"
+                  style={{ fontFamily: '"Times New Roman", Times, serif' }}
+                >
+                  {poemStanzas.map((stanza, stanzaIndex) => (
+                    <div
+                      key={stanzaIndex}
+                      className={
+                        stanzaIndex < poemStanzas.length - 1 ? "mb-8" : ""
+                      }
+                    >
+                      {stanza.map((line) => (
+                        <p key={line}>{line}</p>
+                      ))}
+                    </div>
+                  ))}
+
+                  <div className="mt-8 border-t border-[#eadfd5] pt-5 text-right text-[15px] leading-7 not-italic text-gray-600">
+                    {poem.source}
+                  </div>
                 </div>
-              ) : (
-                <div className="rounded-3xl border border-dashed border-[#d8c7b8] bg-[#fffaf2] p-6">
-                  <p className="text-sm font-semibold text-[#7f1d2d]">
-                    Nội dung bài thơ đang được cập nhật
-                  </p>
-                  <p className="mt-2 text-sm leading-6 text-gray-500">
-                    Phần nhiệm vụ luyện tập đã được cập nhật theo tài liệu
-                    Nguyệt Cầm. Khi có bản nguyên văn, chỉ cần bổ sung vào khu
-                    vực này.
-                  </p>
-                </div>
-              )}
+              ) : null}
 
               <div className="mt-8">
                 <p className="text-xs font-bold uppercase tracking-wide text-[#a16207]">
