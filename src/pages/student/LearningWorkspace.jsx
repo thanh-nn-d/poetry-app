@@ -1,6 +1,10 @@
 import { useEffect, useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
-import { getLevelInfo, getSupportLevel, markTextCompleted } from "./supportLevel"
+import {
+  getLevelInfo,
+  getSupportLevel,
+  markTextCompleted,
+} from "./supportLevel"
 
 const poem = {
   id: "nguyet-cam",
@@ -10,10 +14,38 @@ const poem = {
     "In trong Gửi hương cho gió, NXB Hội Nhà văn, Hội Nghiên cứu – Giảng dạy văn học, Thành phố Hồ Chí Minh, 1992, tr. 77",
 }
 
+const poemStanzas = [
+  [
+    "Trăng nhập vào đây cung nguyệt lạnh,",
+    "Trăng thương, trăng nhớ, hỡi trăng ngàn.",
+    "Đàn buồn, đàn lặng, ôi đàn chậm!",
+    "Mỗi giọt rơi tàn như lệ ngân.",
+  ],
+  [
+    "Mây vắng, trời trong, đêm thủy tinh;",
+    "Linh lung bóng sáng bỗng rung mình",
+    "Vì nghe nương tử trong câu hát",
+    "Đã chết đêm rằm theo nước xanh.",
+  ],
+  [
+    "Thu lạnh càng thêm nguyệt tỏ ngời,",
+    "Đàn ghê như nước, lạnh, trời ơi...",
+    "Long lanh tiếng sỏi vang vang hận.",
+    "Trăng nhớ Tầm Dương, nhạc nhớ người.",
+  ],
+  [
+    "Bốn bề ánh nhạc: biển pha lê",
+    "Chiếc đảo hồn tôi rợn bốn bề.",
+    "Sương bạc làm thinh, khuya nín thở",
+    "Nghe sầu âm nhạc đến sao Khuê.",
+  ],
+]
+
 const activities = [
   {
     id: 1,
-    title: "Tìm hiểu đặc sắc từ ngữ, hình ảnh qua sự tương giao cảm giác",
+    title:
+      "Tìm hiểu đặc sắc từ ngữ, hình ảnh qua sự tương giao cảm giác",
     shortTitle: "Tương giao cảm giác",
   },
   {
@@ -28,7 +60,8 @@ const activities = [
   },
   {
     id: 4,
-    title: "Tìm hiểu tình cảm, cảm xúc của chủ thể trữ tình",
+    title:
+      "Tìm hiểu tình cảm, cảm xúc của chủ thể trữ tình",
     shortTitle: "Cảm xúc",
   },
   {
@@ -75,6 +108,7 @@ const activityPrompts = {
       "Sau khi đọc và phân tích bài thơ, hãy cho biết ý nghĩa nhan đề Nguyệt Cầm và lí giải bằng những phát hiện từ văn bản.",
     ],
   },
+
   2: {
     1: [
       "Đọc lại bài thơ và tìm những từ ngữ, hình ảnh được sử dụng nổi bật hoặc có cách diễn đạt đặc biệt, ngoài ý nghĩa trực tiếp còn có thể gợi ra những liên tưởng hoặc ý nghĩa khác.",
@@ -92,6 +126,7 @@ const activityPrompts = {
       "Từ những hình ảnh đã phân tích, khái quát ý nghĩa của hệ thống hình ảnh tượng trưng trong Nguyệt Cầm.",
     ],
   },
+
   3: {
     1: [
       "Theo dõi hướng dẫn để xác định cách ngắt nhịp và phối hợp thanh điệu trong bài thơ.",
@@ -109,6 +144,7 @@ const activityPrompts = {
       "Khái quát vai trò của nhạc điệu trong Nguyệt Cầm đối với âm hưởng, không gian nghệ thuật và cảm xúc của bài thơ.",
     ],
   },
+
   4: {
     1: [
       "Xác định chủ thể trữ tình của bài thơ. Cho biết các cảm giác “lạnh”, “rung mình”, “ghê như nước”, “rợn” là cảm giác của ai và được gợi ra từ đâu.",
@@ -118,77 +154,81 @@ const activityPrompts = {
     2: [
       "Xác định chủ thể trữ tình, đối tượng hướng tới và hoàn cảnh làm nảy sinh cảm xúc.",
       "Theo dõi diễn biến của mạch thơ để xác định sự thay đổi trong cảm xúc của chủ thể trữ tình khi cảm nhận tiếng đàn.",
-      "Từ sự vận động của cảm xúc, khái quát tình cảm, thái độ của chủ thể trữ tình đối với đối tượng được hướng tới và đời sống nội tâm.",
+      "Khái quát tình cảm, cảm xúc chủ đạo của chủ thể trữ tình và nhận xét cách bài thơ thể hiện cảm xúc ấy.",
     ],
     3: [
-      "Đọc lại bài thơ và xác định cảm giác, trạng thái cảm xúc của chủ thể trữ tình trong từng khổ thơ; dựa vào từ ngữ, hình ảnh và chi tiết để lí giải.",
-      "Từ những cảm giác và trạng thái trong từng khổ thơ, khái quát cảm xúc chủ đạo, những sắc thái nổi bật và mối quan hệ với đối tượng được hướng tới.",
-      "Có ý kiến cho rằng: “Trong Nguyệt Cầm, tiếng đàn không chỉ được nghe bằng đôi tai mà còn được cảm nhận bằng toàn bộ tâm hồn.” Em có đồng tình không? Hãy viết đoạn văn trình bày ý kiến.",
+      "Tự xác định cảm xúc được thể hiện trong từng khổ thơ và chỉ ra những từ ngữ, hình ảnh làm căn cứ.",
+      "Phân tích sự vận động của cảm xúc từ đầu đến cuối bài thơ.",
+      "Viết một đoạn ngắn trình bày cảm nhận của em về cảm xúc chủ đạo của chủ thể trữ tình trong Nguyệt Cầm.",
     ],
   },
+
   5: {
     1: [
-      "Dựa vào những hình tượng nổi bật, đối tượng được tập trung thể hiện và cảm xúc của chủ thể trữ tình để khái quát tứ thơ của Nguyệt Cầm.",
-      "Xác định những hình tượng nổi bật trong từng khổ thơ và theo dõi sự xuất hiện của chúng; xem xét quan hệ tương ứng, song đôi, tương phản, nối tiếp hoặc bổ sung.",
-      "Từ những phân tích trên, khái quát đặc điểm cấu tứ của Nguyệt Cầm và làm rõ cách tổ chức hình tượng, mạch cảm xúc góp phần thể hiện tâm trạng, tình cảm và tư tưởng chủ đề.",
+      "Xác định tứ thơ và những hình ảnh chính được tổ chức xoay quanh trăng, đàn, âm nhạc và không gian đêm lạnh.",
+      "Theo dõi sự vận động của hình ảnh và cảm xúc từ khổ đầu đến khổ cuối; ghi lại sự thay đổi nổi bật.",
+      "Từ cách tổ chức hình ảnh và mạch cảm xúc, khái quát cấu tứ của bài thơ.",
     ],
     2: [
-      "Đọc bao quát Nguyệt Cầm và khái quát tứ thơ của bài; xác định ý tưởng, cảm hứng hoặc cách nhìn trung tâm được triển khai xuyên suốt.",
-      "Từ cảm xúc của chủ thể trữ tình, nhận xét cách triển khai mạch cảm xúc; đồng thời xác định những hình ảnh vừa gợi ánh trăng vừa gợi tiếng đàn và nhận xét mối quan hệ giữa trăng và đàn.",
-      "Từ sự hòa quyện giữa ánh trăng và tiếng đàn, khái quát chủ đề, tư tưởng của văn bản Nguyệt Cầm.",
+      "Xác định ý tưởng hoặc hình ảnh trung tâm chi phối việc tổ chức bài thơ.",
+      "Theo dõi sự vận động của mạch cảm xúc và mối quan hệ giữa trăng, đàn, âm nhạc, không gian.",
+      "Từ đó, trình bày cách cấu tứ góp phần thể hiện chủ đề và tư tưởng của bài thơ.",
     ],
     3: [
-      "Dựa vào những kết quả đọc hiểu đã thực hiện, phân tích cách tứ thơ Nguyệt Cầm được triển khai từ đầu đến cuối bài thơ.",
-      "Phân tích tác dụng của cách tổ chức hình tượng và mạch cảm xúc trong việc triển khai tứ thơ và thể hiện thế giới nội tâm của chủ thể trữ tình.",
-      "Vì sao Xuân Diệu để tiếng đàn hòa quyện với trăng, nước, ánh sáng, sương, không gian và những liên tưởng văn hóa? Cách tổ chức ấy có vai trò gì trong việc phát triển tứ thơ và tạo chiều sâu cảm xúc? Từ đó xác định chủ đề, tư tưởng của bài thơ.",
+      "Phân tích cách bài thơ tổ chức toàn bộ hệ thống hình ảnh, âm thanh, ánh sáng và không gian từ đầu đến cuối.",
+      "Giải thích vì sao tiếng đàn lại được hòa quyện với trăng, nước, ánh sáng, sương và không gian nghệ thuật trong bài thơ.",
+      "Khái quát cấu tứ, chủ đề và tư tưởng của Nguyệt Cầm; làm rõ sự thống nhất giữa cấu tứ và cảm xúc của chủ thể trữ tình.",
     ],
   },
 }
 
 const supportHints = {
   1: [
-    "Chú ý hai mạch hình ảnh nổi bật: ánh sáng/trăng và âm nhạc/đàn.",
-    "Hình ảnh có sự tương giao giác quan là hình ảnh được cảm nhận từ hai hay nhiều giác quan.",
-    "Có thể bắt đầu bằng việc đối chiếu hình ảnh ánh sáng/trăng với hình ảnh âm nhạc/đàn.",
+    "Đọc từng câu thơ chậm và gạch chân từ ngữ quan trọng.",
+    "Có thể bắt đầu từ những hình ảnh đã được hệ thống gợi ý.",
+    "Trả lời từng bước, không cần viết hoàn chỉnh ngay từ đầu.",
   ],
   2: [
-    "Chú ý những hình ảnh được đặt trong mối quan hệ đặc biệt với các từ ngữ và hình ảnh khác.",
-    "Có thể dựa vào chú thích văn hóa, văn học và những hình ảnh xung quanh.",
-    "Theo dõi sự vận động của hình tượng và cảm xúc từ đầu đến cuối bài thơ.",
+    "Xác định chi tiết nổi bật trước, sau đó mới phân tích mối quan hệ giữa chúng.",
+    "Có thể quay lại văn bản để kiểm tra từ ngữ làm căn cứ.",
+    "Tập trung vào mối quan hệ giữa hình ảnh và cảm xúc.",
   ],
   3: [
-    "Tự chọn bằng chứng trong văn bản và lí giải theo mạch lập luận của em.",
-    "Khi phân tích, đặt hình ảnh, nhịp điệu và cảm xúc trong chỉnh thể bài thơ.",
-    "Hệ thống chủ yếu cung cấp yêu cầu; phần lí giải do em tự xây dựng.",
+    "Tự lựa chọn chi tiết làm căn cứ cho lập luận.",
+    "Có thể tổ chức câu trả lời theo cấu trúc: phát hiện → phân tích → nhận xét.",
+    "Ưu tiên giải thích bằng dẫn chứng trực tiếp từ văn bản.",
   ],
 }
 
-function LearningWorkspace() {
+export default function LearningWorkspace() {
   const navigate = useNavigate()
+
   const supportLevel = getSupportLevel()
   const supportInfo = getLevelInfo(supportLevel)
 
   const [activeActivity, setActiveActivity] = useState(1)
   const [completedActivities, setCompletedActivities] = useState([])
-  const [answers, setAnswers] = useState(() => {
-    try {
-      return JSON.parse(localStorage.getItem("nguyetCamLearningAnswers") || "{}")
-    } catch {
-      return {}
-    }
-  })
+  const [answers, setAnswers] = useState({})
   const [selectedTargets, setSelectedTargets] = useState([])
   const [note, setNote] = useState("")
   const [showNoteBox, setShowNoteBox] = useState(false)
 
   useEffect(() => {
-    localStorage.setItem("nguyetCamLearningAnswers", JSON.stringify(answers))
+    localStorage.setItem(
+      "nguyetCamLearningAnswers",
+      JSON.stringify(answers),
+    )
   }, [answers])
 
-  const currentActivity = activities.find((item) => item.id === activeActivity)
+  const currentActivity =
+    activities.find((item) => item.id === activeActivity) ||
+    activities[0]
 
   const progress = useMemo(
-    () => Math.round((completedActivities.length / activities.length) * 100),
+    () =>
+      Math.round(
+        (completedActivities.length / activities.length) * 100,
+      ),
     [completedActivities.length],
   )
 
@@ -212,17 +252,23 @@ function LearningWorkspace() {
 
   const handleCompleteActivity = () => {
     if (activeActivity === 1 && selectedTargets.length === 0) {
-      alert("Hãy chọn ít nhất một hình ảnh/từ ngữ để bắt đầu phân tích.")
+      alert(
+        "Hãy chọn ít nhất một hình ảnh/từ ngữ để bắt đầu phân tích.",
+      )
       return
     }
 
-    const prompts = activityPrompts[activeActivity][supportLevel]
+    const prompts =
+      activityPrompts[activeActivity]?.[supportLevel] || []
+
     const hasAnswer = prompts.some((_, index) =>
       getAnswer(activeActivity, index).trim(),
     )
 
     if (!hasAnswer) {
-      alert("Hãy hoàn thành ít nhất một phần trả lời trước khi tiếp tục.")
+      alert(
+        "Hãy hoàn thành ít nhất một phần trả lời trước khi tiếp tục.",
+      )
       return
     }
 
@@ -235,10 +281,14 @@ function LearningWorkspace() {
     if (activeActivity < activities.length) {
       setActiveActivity(activeActivity + 1)
       setSelectedTargets([])
+
       setTimeout(() => {
         document
           .getElementById(`activity-${activeActivity + 1}`)
-          ?.scrollIntoView({ behavior: "smooth", block: "center" })
+          ?.scrollIntoView({
+            behavior: "smooth",
+            block: "center",
+          })
       }, 100)
     }
   }
@@ -253,100 +303,106 @@ function LearningWorkspace() {
 
     setActiveActivity(activityId)
     setSelectedTargets([])
+
     setTimeout(() => {
       document
         .getElementById(`activity-${activityId}`)
-        ?.scrollIntoView({ behavior: "smooth", block: "center" })
+        ?.scrollIntoView({
+          behavior: "smooth",
+          block: "center",
+        })
     }, 100)
   }
 
   const handleFinish = () => {
-    if (completedActivities.length !== activities.length) {
-      alert("Hãy hoàn thành tất cả 5 hoạt động trước khi xem kết quả.")
-      return
-    }
-
-    const startedAt = Number(
-      localStorage.getItem("learningStartedAt") || Date.now(),
-    )
-    const elapsedSeconds = Math.max(
-      0,
-      Math.round((Date.now() - startedAt) / 1000),
+    markTextCompleted(
+      poem.id,
+      Math.max(
+        0,
+        Math.round(
+          (Date.now() -
+            Number(
+              localStorage.getItem("learningStartedAt") ||
+                Date.now(),
+            )) /
+            1000,
+        ),
+      ),
     )
 
     localStorage.setItem(
-      "nguyetCamLearningResult",
+      "nguyetCamLearningSummary",
       JSON.stringify({
         textId: poem.id,
         title: poem.title,
-        author: poem.author,
         supportLevel,
-        completedActivities: activities.length,
+        completedActivities,
         answers,
-        elapsedSeconds,
+        selectedTargets,
+        note,
         completedAt: new Date().toISOString(),
       }),
     )
 
-    markTextCompleted(poem.id, elapsedSeconds)
-    localStorage.removeItem("learningStartedAt")
     navigate("/student/summary")
   }
 
-  const poemTextAvailable = true
+  const prompts =
+    activityPrompts[activeActivity]?.[supportLevel] || []
 
-  const poemStanzas = [
-    [
-      "Trăng nhập vào đây cung nguyệt lạnh,",
-      "Trăng thương, trăng nhớ, hỡi trăng ngàn.",
-      "Đàn buồn, đàn lặng, ôi đàn chậm!",
-      "Mỗi giọt rơi tàn như lệ ngân.",
-    ],
-    [
-      "Mây vắng, trời trong, đêm thủy tinh;",
-      "Linh lung bóng sáng bỗng rung mình",
-      "Vì nghe nương tử trong câu hát",
-      "Đã chết đêm rằm theo nước xanh.",
-    ],
-    [
-      "Thu lạnh càng thêm nguyệt tỏ ngời,",
-      "Đàn ghê như nước, lạnh, trời ơi...",
-      "Long lanh tiếng sỏi vang vang hận.",
-      "Trăng nhớ Tầm Dương, nhạc nhớ người.",
-    ],
-    [
-      "Bốn bề ánh nhạc: biển pha lê",
-      "Chiếc đảo hồn tôi rợn bốn bề.",
-      "Sương bạc làm thinh, khuya nín thở",
-      "Nghe sầu âm nhạc đến sao Khuê.",
-    ],
-  ]
+  const hints = supportHints[supportLevel] || supportHints[1]
 
   return (
-    <div className="min-h-screen bg-[#faf8f3] text-gray-800">
-      <header className="sticky top-0 z-50 border-b border-[#eadfd5] bg-white/95 backdrop-blur">
-        <div className="mx-auto max-w-7xl px-6 py-4">
-          <div className="flex items-center justify-between gap-6">
+    <div className="min-h-screen bg-[#f8f5f0] text-gray-800">
+      <header className="sticky top-0 z-30 border-b border-[#eadfd5] bg-white/95 backdrop-blur">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 md:px-6">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#a16207]">
+              LUYỆN TẬP ĐỌC HIỂU THƠ
+            </p>
+            <h1 className="mt-1 text-xl font-bold text-[#7f1d2d]">
+              Nguyệt Cầm
+            </h1>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <span className="hidden rounded-xl bg-[#fff8ee] px-3 py-2 text-sm font-semibold text-[#8f1d2c] sm:inline-flex">
+              {supportInfo.label} · {supportInfo.shortName}
+            </span>
+
+            <button
+              type="button"
+              onClick={() => navigate("/student/texts")}
+              className="rounded-xl border border-[#eadfd5] bg-white px-4 py-2 text-sm font-semibold text-gray-600 hover:bg-[#fff8ee]"
+            >
+              Văn bản
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-7xl px-4 py-6 md:px-6 md:py-8">
+        <div className="mb-6 rounded-3xl bg-white p-5 shadow-sm ring-1 ring-[#eadfd5]">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-[#a16207]">
-                Không gian học tập
+              <p className="text-xs font-bold uppercase tracking-wide text-[#a16207]">
+                MỨC HỖ TRỢ HIỆN TẠI
               </p>
-              <h1 className="mt-1 text-xl font-bold text-[#7f1d2d]">
-                {poem.title}
-              </h1>
-              <p className="mt-1 text-sm text-gray-500">{poem.author}</p>
+              <h2 className="mt-1 text-xl font-bold text-gray-800">
+                {supportInfo.label} — {supportInfo.shortName}
+              </h2>
+              <p className="mt-1 max-w-3xl text-sm leading-6 text-gray-500">
+                {supportInfo.description}
+              </p>
             </div>
 
-            <div className="hidden min-w-[220px] sm:block">
-              <div className="mb-2 flex items-center justify-between">
-                <span className="text-xs font-medium text-gray-500">
-                  Tiến độ luyện tập
-                </span>
-                <span className="text-xs font-bold text-[#7f1d2d]">
-                  {completedActivities.length}/{activities.length}
-                </span>
+            <div className="min-w-[220px]">
+              <div className="flex items-center justify-between text-xs font-semibold text-gray-500">
+                <span>Tiến độ luyện tập</span>
+                <span>{progress}%</span>
               </div>
-              <div className="h-2 overflow-hidden rounded-full bg-gray-100">
+
+              <div className="mt-2 h-2 overflow-hidden rounded-full bg-gray-100">
                 <div
                   className="h-full rounded-full bg-[#8f1d2c] transition-all"
                   style={{ width: `${progress}%` }}
@@ -355,44 +411,50 @@ function LearningWorkspace() {
             </div>
           </div>
         </div>
-      </header>
 
-      <main className="mx-auto max-w-7xl px-6 py-6">
-        <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)_340px]">
+        <div className="grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)_390px]">
           <aside className="h-fit rounded-3xl bg-white p-4 shadow-sm ring-1 ring-[#eadfd5] lg:sticky lg:top-28">
-            <p className="px-3 py-2 text-xs font-bold uppercase tracking-wide text-gray-400">
+            <p className="px-2 text-xs font-bold uppercase tracking-wide text-[#a16207]">
               Hoạt động
             </p>
 
-            <div className="space-y-2">
+            <div className="mt-3 space-y-2">
               {activities.map((activity) => {
-                const isActive = activeActivity === activity.id
-                const isCompleted = completedActivities.includes(activity.id)
+                const isActive =
+                  activity.id === activeActivity
+
+                const isCompleted =
+                  completedActivities.includes(activity.id)
+
                 const isLocked =
                   activity.id > 1 &&
-                  !completedActivities.includes(activity.id - 1)
+                  !completedActivities.includes(
+                    activity.id - 1,
+                  )
 
                 return (
                   <button
                     key={activity.id}
                     type="button"
                     disabled={isLocked}
-                    onClick={() => handleActivityChange(activity.id)}
-                    className={`flex w-full items-center gap-3 rounded-2xl p-3 text-left transition ${
+                    onClick={() =>
+                      handleActivityChange(activity.id)
+                    }
+                    className={`flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition ${
                       isActive
                         ? "bg-[#8f1d2c] text-white"
                         : isLocked
-                          ? "cursor-not-allowed opacity-40"
-                          : "text-gray-700 hover:bg-[#faf8f3]"
+                          ? "cursor-not-allowed bg-gray-50 text-gray-300"
+                          : "bg-white text-gray-700 hover:bg-[#fff8ee]"
                     }`}
                   >
                     <span
-                      className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-xs font-bold ${
+                      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold ${
                         isActive
                           ? "bg-white/15 text-white"
                           : isCompleted
-                            ? "bg-green-50 text-green-600"
-                            : "bg-[#f6eee6] text-[#7f1d2d]"
+                            ? "bg-[#f6eee6] text-[#8f1d2c]"
+                            : "bg-gray-100 text-gray-500"
                       }`}
                     >
                       {isCompleted ? "✓" : activity.id}
@@ -402,9 +464,12 @@ function LearningWorkspace() {
                       <p className="text-sm font-semibold">
                         {activity.shortTitle}
                       </p>
+
                       <p
                         className={`mt-0.5 text-xs ${
-                          isActive ? "text-white/70" : "text-gray-400"
+                          isActive
+                            ? "text-white/70"
+                            : "text-gray-400"
                         }`}
                       >
                         Hoạt động {activity.id}
@@ -421,41 +486,52 @@ function LearningWorkspace() {
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#a16207]">
                 ĐỌC VĂN BẢN
               </p>
+
               <h2 className="mt-3 text-3xl font-bold text-[#7f1d2d]">
                 NGUYỆT CẦM
               </h2>
+
               <p
                 className="mt-1 text-base italic text-gray-600"
-                style={{ fontFamily: '"Times New Roman", Times, serif' }}
+                style={{
+                  fontFamily:
+                    '"Times New Roman", Times, serif',
+                }}
               >
                 - Xuân Diệu -
               </p>
             </div>
 
             <div className="px-6 py-8 md:px-10">
-              {poemTextAvailable ? (
-                <div
-                  className="text-xl italic leading-[1.9] text-gray-900 md:text-[22px]"
-                  style={{ fontFamily: '"Times New Roman", Times, serif' }}
-                >
-                  {poemStanzas.map((stanza, stanzaIndex) => (
+              <div
+                className="text-xl italic leading-[1.9] text-gray-900 md:text-[22px]"
+                style={{
+                  fontFamily:
+                    '"Times New Roman", Times, serif',
+                }}
+              >
+                {poemStanzas.map(
+                  (stanza, stanzaIndex) => (
                     <div
                       key={stanzaIndex}
                       className={
-                        stanzaIndex < poemStanzas.length - 1 ? "mb-8" : ""
+                        stanzaIndex <
+                        poemStanzas.length - 1
+                          ? "mb-8"
+                          : ""
                       }
                     >
                       {stanza.map((line) => (
                         <p key={line}>{line}</p>
                       ))}
                     </div>
-                  ))}
+                  ),
+                )}
 
-                  <div className="mt-8 border-t border-[#eadfd5] pt-5 text-right text-[15px] leading-7 not-italic text-gray-600">
-                    {poem.source}
-                  </div>
+                <div className="mt-8 border-t border-[#eadfd5] pt-5 text-right text-[15px] leading-7 not-italic text-gray-600">
+                  {poem.source}
                 </div>
-              ) : null}
+              </div>
 
               <div className="mt-8">
                 <p className="text-xs font-bold uppercase tracking-wide text-[#a16207]">
@@ -467,7 +543,10 @@ function LearningWorkspace() {
                     <p
                       key={line}
                       className="rounded-xl bg-[#fffdf9] px-4 py-2 text-base italic leading-7 text-gray-800 ring-1 ring-[#eadfd5]"
-                      style={{ fontFamily: '"Times New Roman", Times, serif' }}
+                      style={{
+                        fontFamily:
+                          '"Times New Roman", Times, serif',
+                      }}
                     >
                       “{line}”
                     </p>
@@ -480,19 +559,26 @@ function LearningWorkspace() {
                   <p className="text-xs text-gray-500">
                     Em có thể ghi chú trong quá trình đọc.
                   </p>
+
                   <button
                     type="button"
-                    onClick={() => setShowNoteBox((current) => !current)}
+                    onClick={() =>
+                      setShowNoteBox((current) => !current)
+                    }
                     className="rounded-lg bg-[#f6eee6] px-3 py-1.5 text-xs font-semibold text-[#7f1d2d]"
                   >
-                    {showNoteBox ? "Ẩn ghi chú" : "Ghi chú"}
+                    {showNoteBox
+                      ? "Ẩn ghi chú"
+                      : "Ghi chú"}
                   </button>
                 </div>
 
                 {showNoteBox && (
                   <textarea
                     value={note}
-                    onChange={(event) => setNote(event.target.value)}
+                    onChange={(event) =>
+                      setNote(event.target.value)
+                    }
                     rows={4}
                     placeholder="Ghi lại điều em chú ý trong văn bản..."
                     className="mt-3 w-full rounded-2xl border border-gray-200 bg-white px-4 py-3 text-sm leading-6 outline-none focus:border-[#8f1d2c]"
@@ -511,8 +597,11 @@ function LearningWorkspace() {
                 <span className="rounded-lg bg-[#8f1d2c] px-2.5 py-1 text-xs font-bold text-white">
                   Hoạt động {currentActivity.id}
                 </span>
+
                 <span className="text-xs font-medium text-gray-400">
-                  {completedActivities.includes(currentActivity.id)
+                  {completedActivities.includes(
+                    currentActivity.id,
+                  )
                     ? "Đã hoàn thành"
                     : "Đang thực hiện"}
                 </span>
@@ -524,8 +613,10 @@ function LearningWorkspace() {
 
               <div className="mt-4 rounded-2xl bg-[#fff8ee] p-4 ring-1 ring-[#eadfd5]">
                 <p className="text-xs font-bold uppercase tracking-wide text-[#a16207]">
-                  {supportInfo.label} · {supportInfo.shortName}
+                  {supportInfo.label} ·{" "}
+                  {supportInfo.shortName}
                 </p>
+
                 <p className="mt-2 text-sm leading-6 text-gray-600">
                   {supportInfo.description}
                 </p>
@@ -548,15 +639,23 @@ function LearningWorkspace() {
                       <button
                         key={target}
                         type="button"
-                        onClick={() => toggleTarget(target)}
+                        onClick={() =>
+                          toggleTarget(target)
+                        }
                         className={`w-full rounded-xl border px-3 py-2 text-left text-sm italic transition ${
-                          selectedTargets.includes(target)
+                          selectedTargets.includes(
+                            target,
+                          )
                             ? "border-[#8f1d2c] bg-[#f6eee6] text-[#7f1d2d]"
                             : "border-gray-200 bg-white text-gray-600 hover:border-[#d8b6a4]"
                         }`}
                       >
                         <span className="mr-2">
-                          {selectedTargets.includes(target) ? "✓" : "○"}
+                          {selectedTargets.includes(
+                            target,
+                          )
+                            ? "✓"
+                            : "○"}
                         </span>
                         “{target}”
                       </button>
@@ -568,10 +667,15 @@ function LearningWorkspace() {
                       <p className="text-xs font-bold uppercase tracking-wide text-[#a16207]">
                         Hình ảnh đã chọn
                       </p>
+
                       <ul className="mt-2 space-y-1 text-xs leading-5 text-gray-600">
-                        {selectedTargets.map((target) => (
-                          <li key={target}>• {target}</li>
-                        ))}
+                        {selectedTargets.map(
+                          (target) => (
+                            <li key={target}>
+                              • {target}
+                            </li>
+                          ),
+                        )}
                       </ul>
                     </div>
                   )}
@@ -579,40 +683,44 @@ function LearningWorkspace() {
               )}
 
               <div className="mt-5 space-y-5">
-                {activityPrompts[activeActivity][supportLevel].map(
-                  (prompt, index) => (
-                    <div key={`${activeActivity}-${index}`}>
-                      <p className="text-sm font-bold leading-6 text-gray-800">
-                        Bước {index + 1}
-                      </p>
-                      <p className="mt-1 text-sm leading-6 text-gray-600">
-                        {prompt}
-                      </p>
+                {prompts.map((prompt, index) => (
+                  <div
+                    key={`${activeActivity}-${supportLevel}-${index}`}
+                  >
+                    <p className="text-sm font-bold leading-6 text-gray-800">
+                      Bước {index + 1}
+                    </p>
 
-                      <textarea
-                        value={getAnswer(activeActivity, index)}
-                        onChange={(event) =>
-                          updateAnswer(
-                            activeActivity,
-                            index,
-                            event.target.value,
-                          )
-                        }
-                        rows={5}
-                        placeholder="Viết câu trả lời của em..."
-                        className="mt-2 w-full resize-y rounded-2xl border border-gray-200 bg-[#fffdf9] px-4 py-3 text-sm leading-6 text-gray-800 outline-none placeholder:text-gray-400 focus:border-[#8f1d2c] focus:ring-2 focus:ring-[#8f1d2c]/10"
-                      />
-                    </div>
-                  ),
-                )}
+                    <p className="mt-1 text-sm leading-6 text-gray-600">
+                      {prompt}
+                    </p>
+
+                    <textarea
+                      value={getAnswer(
+                        activeActivity,
+                        index,
+                      )}
+                      onChange={(event) =>
+                        updateAnswer(
+                          activeActivity,
+                          index,
+                          event.target.value,
+                        )
+                      }
+                      rows={5}
+                      placeholder="Viết câu trả lời của em..."
+                      className="mt-2 w-full resize-y rounded-2xl border border-gray-200 bg-[#fffdf9] px-4 py-3 text-sm leading-6 text-gray-800 outline-none placeholder:text-gray-400 focus:border-[#8f1d2c] focus:ring-2 focus:ring-[#8f1d2c]/10"
+                    />
+                  </div>
+                ))}
               </div>
-
               <div className="mt-5 rounded-2xl bg-[#fff8ee] p-4">
                 <p className="text-xs font-bold uppercase tracking-wide text-[#a16207]">
                   Gợi ý hỗ trợ
                 </p>
+
                 <ul className="mt-2 space-y-2 text-xs leading-5 text-gray-600">
-                  {supportHints[supportLevel].map((hint) => (
+                  {hints.map((hint) => (
                     <li key={hint}>• {hint}</li>
                   ))}
                 </ul>
@@ -638,6 +746,7 @@ function LearningWorkspace() {
                 <p className="font-bold text-gray-800">
                   Em đã hoàn thành 5 hoạt động
                 </p>
+
                 <p className="mt-1 text-sm text-gray-500">
                   Hãy chuyển sang bước tiếp theo để xem kết quả luyện tập.
                 </p>
@@ -657,5 +766,3 @@ function LearningWorkspace() {
     </div>
   )
 }
-
-export default LearningWorkspace
