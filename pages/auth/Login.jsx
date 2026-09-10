@@ -37,10 +37,6 @@ export default function Login() {
       return
     }
 
-    // =========================
-    // PHÂN QUYỀN ĐĂNG NHẬP
-    // =========================
-
     if (result.account.role === "student") {
       navigate("/student/home", { replace: true })
       return
@@ -57,8 +53,6 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-[#faf8f3] flex items-center justify-center px-4">
       <div className="w-full max-w-md">
-
-        {/* Logo */}
         <div className="text-center mb-8">
           <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-[#8f1d2c] text-3xl font-bold text-white">
             NV
@@ -73,7 +67,6 @@ export default function Login() {
           </p>
         </div>
 
-        {/* Form */}
         <form
           onSubmit={handleSubmit}
           className="rounded-2xl bg-white p-8 shadow-lg"
@@ -83,8 +76,6 @@ export default function Login() {
           </h2>
 
           <div className="space-y-5">
-
-            {/* Username */}
             <div>
               <label className="mb-2 block text-sm font-medium text-gray-700">
                 Tên đăng nhập
@@ -103,7 +94,6 @@ export default function Login() {
               />
             </div>
 
-            {/* Password */}
             <div>
               <label className="mb-2 block text-sm font-medium text-gray-700">
                 Mật khẩu
@@ -123,21 +113,18 @@ export default function Login() {
             </div>
           </div>
 
-          {/* Success */}
           {success && (
             <div className="mt-4 rounded-xl bg-green-50 px-4 py-3 text-sm text-green-700">
               {success}
             </div>
           )}
 
-          {/* Error */}
           {error && (
             <div className="mt-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-700">
               {error}
             </div>
           )}
 
-          {/* Login button */}
           <button
             type="submit"
             className="mt-5 w-full rounded-xl bg-[#8f1d2c] py-3 font-semibold text-white transition hover:bg-[#741624]"
@@ -145,7 +132,6 @@ export default function Login() {
             Đăng nhập
           </button>
 
-          {/* Register */}
           <div className="mt-6 text-center text-sm text-gray-500">
             Chưa có tài khoản?{" "}
             <Link
@@ -156,54 +142,64 @@ export default function Login() {
             </Link>
           </div>
 
-          {/* Demo accounts */}
           <div className="mt-5 rounded-xl bg-gray-50 px-4 py-4 text-xs text-gray-500">
             <p className="font-semibold text-gray-700">
               Tài khoản mẫu để BGK dùng thử
             </p>
 
-            {/* Student - chưa test */}
             <div className="mt-3">
               <p className="font-semibold text-[#7f1d2d]">
                 HỌC SINH — Chưa làm test đầu vào
               </p>
+
               <p className="mt-1">
-                Tài khoản: <span className="font-medium">hocsinh</span>
+                Tài khoản:{" "}
+                <span className="font-medium">hocsinh</span>
               </p>
+
               <p>
-                Mật khẩu: <span className="font-medium">123456</span>
+                Mật khẩu:{" "}
+                <span className="font-medium">123456</span>
               </p>
+
               <p className="mt-1 text-gray-400">
                 → Bắt đầu từ Mức 1 – Hỗ trợ cao
               </p>
             </div>
 
-            {/* Student - level 3 */}
             <div className="mt-4 border-t border-gray-200 pt-3">
               <p className="font-semibold text-[#7f1d2d]">
                 HỌC SINH — Đã test đầu vào
               </p>
+
               <p className="mt-1">
-                Tài khoản: <span className="font-medium">hocsinh3</span>
+                Tài khoản:{" "}
+                <span className="font-medium">hocsinh3</span>
               </p>
+
               <p>
-                Mật khẩu: <span className="font-medium">123456</span>
+                Mật khẩu:{" "}
+                <span className="font-medium">123456</span>
               </p>
+
               <p className="mt-1 text-gray-400">
                 → Mức 3 – Hỗ trợ thấp
               </p>
             </div>
 
-            {/* Teacher */}
             <div className="mt-4 border-t border-gray-200 pt-3">
               <p className="font-semibold text-[#7f1d2d]">
                 GIÁO VIÊN
               </p>
+
               <p className="mt-1">
-                Tài khoản: <span className="font-medium">giaovien</span>
+                Tài khoản:{" "}
+                <span className="font-medium">giaovien</span>
               </p>
+
               <p>
-                Mật khẩu: <span className="font-medium">123456</span>
+                Mật khẩu:{" "}
+                <span className="font-medium">123456</span>
               </p>
             </div>
           </div>
