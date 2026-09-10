@@ -10,6 +10,14 @@ const DEFAULT_ACCOUNTS = [
     role: "student",
   },
   {
+    id: "demo-student-level3",
+    fullName: "Học sinh mức 3",
+    username: "hocsinh3",
+    password: "123456",
+    role: "student",
+    demoSupportLevel: 3,
+  },
+  {
     id: "demo-teacher",
     fullName: "Giáo viên mẫu",
     username: "giaovien",
@@ -23,7 +31,31 @@ function readAccounts() {
     const raw = localStorage.getItem(ACCOUNTS_KEY)
 
     if (raw) {
-      return JSON.parse(raw)
+      const savedAccounts = JSON.parse(raw)
+
+      if (Array.isArray(savedAccounts)) {
+        // Tự động bổ sung tài khoản demo còn thiếu.
+        const accounts = [...savedAccounts]
+
+        DEFAULT_ACCOUNTS.forEach((defaultAccount) => {
+          const existed = accounts.some(
+            (account) =>
+              account.username.toLowerCase() ===
+              defaultAccount.username.toLowerCase(),
+          )
+
+          if (!existed) {
+            accounts.push(defaultAccount)
+          }
+        })
+
+        localStorage.setItem(
+          ACCOUNTS_KEY,
+          JSON.stringify(accounts),
+        )
+
+        return accounts
+      }
     }
   } catch {
     // Nếu dữ liệu localStorage bị lỗi,
@@ -99,9 +131,34 @@ export function loginAccount(username, password) {
     }
   }
 
+  /*
+   * Tài khoản demo Mức 3:
+   * tự động có trạng thái đã hoàn thành
+   * bài test đầu vào và nhận Mức 3 - Hỗ trợ thấp.
+   */
+  if (account.demoSupportLevel === 3) {
+    localStorage.setItem(
+      "supportLevel",
+      "3",
+    )
+
+    localStorage.setItem(
+      "poetry_initial_assessment",
+      JSON.stringify({
+        demo: true,
+        provisionalSupportLevel: 3,
+        totalCognitiveLoad: 1.5,
+        normalizationStatus: "demo",
+        E: null,
+        completedAt: new Date().toISOString(),
+      }),
+    )
+  }
+
   const safeAccount = { ...account }
 
   delete safeAccount.password
+  delete safeAccount.demoSupportLevel
 
   localStorage.setItem(
     CURRENT_USER_KEY,
