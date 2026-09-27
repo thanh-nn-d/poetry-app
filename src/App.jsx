@@ -13,12 +13,15 @@ import LearningSummary from "./pages/student/LearningSummary"
 import Challenge from "./pages/student/Challenge"
 import ChallengeResult from "./pages/student/ChallengeResult"
 import LearningProfile from "./pages/student/LearningProfile"
+import KnowledgeBase from "./pages/student/KnowledgeBase"
 
 import Grading from "./pages/teacher/Grading"
 import TeacherAssessmentResult from "./pages/teacher/AssessmentResult"
 import Dashboard from "./pages/teacher/Dashboard"
 import StudentProfile from "./pages/teacher/StudentProfile"
 import Feedback from "./pages/teacher/Feedback"
+
+import BackButton from "./components/BackButton"
 
 
 // =====================================================
@@ -59,6 +62,10 @@ function PracticeGuard({ children }) {
 export default function App() {
   return (
     <BrowserRouter>
+
+      {/* NÚT QUAY LẠI DÙNG CHUNG CHO CÁC PAGE */}
+      <BackButton />
+
       <Routes>
 
         {/* =================================================
@@ -186,6 +193,17 @@ export default function App() {
 
 
         {/* =================================================
+            STUDENT - KHO TRI THỨC
+            Độc lập với khu vực luyện tập
+        ================================================= */}
+
+        <Route
+          path="/student/knowledge"
+          element={<KnowledgeBase />}
+        />
+
+
+        {/* =================================================
             TEACHER
         ================================================= */}
 
@@ -230,6 +248,7 @@ export default function App() {
         />
 
       </Routes>
+
     </BrowserRouter>
   )
 }

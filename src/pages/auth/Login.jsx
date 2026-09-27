@@ -104,7 +104,8 @@ export default function Login() {
 
           <div className="mt-5 rounded-xl bg-gray-50 px-4 py-3 text-xs text-gray-500">
             <p className="font-semibold text-gray-700">Tài khoản mẫu để BGK dùng thử</p>
-            <p className="mt-1">HỌC SINH: hocsinh / 123456</p>
+            <p className="mt-1">HỌC SINH MỨC 1 (chưa test & mặc định mức 1): hocsinh / 123456</p>
+            <p>HỌC SINH MỨC 3 (đã test & nhận mức 3): hocsinh3 / 123456</p>
             <p>GIÁO VIÊN: giaovien / 123456</p>
           </div>
         </form>

@@ -6,6 +6,7 @@ import {
   loadInitialAssessment,
   loadLearningProgress,
 } from "./supportLevel"
+import { logoutAccount } from "../../auth"
 
 export default function StudentHome() {
   const navigate = useNavigate()
@@ -22,7 +23,10 @@ export default function StudentHome() {
     : 0
 
   const progressPercent = useMemo(() => {
-    return Math.min(Math.round((completedTexts / 3) * 100), 100)
+    return Math.min(
+      Math.round((completedTexts / 3) * 100),
+      100,
+    )
   }, [completedTexts])
 
   const handleAssessment = () => {
@@ -38,25 +42,56 @@ export default function StudentHome() {
     navigate("/student/texts")
   }
 
+  const handleLogout = () => {
+    logoutAccount()
+    navigate("/", { replace: true })
+  }
+
   return (
     <div className="min-h-screen bg-[#faf8f3] text-gray-800">
+      {/* Header */}
       <header className="border-b border-[#eadfd5] bg-white">
         <div className="mx-auto max-w-6xl px-6 py-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#a16207]">
-            LUYỆN TẬP ĐỌC HIỂU THƠ
-          </p>
-
-          <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+          <div className="flex items-center justify-between gap-4">
+            {/* Thông tin trang */}
             <div>
-              <h1 className="text-2xl font-bold text-[#7f1d2d]">
-                Trang chủ học sinh
-              </h1>
-
-              <p className="mt-1 text-sm text-gray-500">
-                Bắt đầu hoặc tiếp tục quá trình học tập của em.
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#a16207]">
+                LUYỆN TẬP ĐỌC HIỂU THƠ
               </p>
+
+              <div className="mt-2">
+                <h1 className="text-2xl font-bold text-[#7f1d2d]">
+                  Trang chủ học sinh
+                </h1>
+
+                <p className="mt-1 text-sm text-gray-500">
+                  Bắt đầu hoặc tiếp tục quá trình học tập của em.
+                </p>
+              </div>
             </div>
 
+            {/* Điều hướng + Đăng xuất */}
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => navigate("/student/home")}
+                className="rounded-xl bg-[#8f1d2c] px-4 py-2 text-sm font-semibold text-white hover:bg-[#741624]"
+              >
+                Trang chủ
+              </button>
+
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="text-sm font-semibold text-[#7f1d2d] underline underline-offset-4 hover:text-[#a16207]"
+              >
+                Đăng xuất
+              </button>
+            </div>
+          </div>
+
+          {/* Mức hỗ trợ */}
+          <div className="mt-4">
             <span className="inline-flex w-fit items-center rounded-full border border-[#ead7c8] bg-[#fffaf3] px-4 py-2 text-sm font-semibold text-[#7f1d2d]">
               Mức hỗ trợ {level}
             </span>
@@ -101,6 +136,7 @@ export default function StudentHome() {
             hasAssessment ? "mt-0" : "mt-6"
           } md:grid-cols-3`}
         >
+          {/* Mức hỗ trợ */}
           <article className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-[#eadfd5]">
             <p className="text-xs font-bold uppercase tracking-wide text-[#a16207]">
               Mức hỗ trợ hiện tại
@@ -121,6 +157,7 @@ export default function StudentHome() {
             )}
           </article>
 
+          {/* Tiến độ */}
           <article className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-[#eadfd5]">
             <p className="text-xs font-bold uppercase tracking-wide text-[#a16207]">
               Tiến độ luyện tập
@@ -142,13 +179,16 @@ export default function StudentHome() {
             </p>
           </article>
 
+          {/* Trạng thái */}
           <article className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-[#eadfd5]">
             <p className="text-xs font-bold uppercase tracking-wide text-[#a16207]">
               Trạng thái
             </p>
 
             <h3 className="mt-3 text-xl font-bold text-[#7f1d2d]">
-              {hasAssessment ? "Đã hoàn thành test" : "Chưa làm test đầu vào"}
+              {hasAssessment
+                ? "Đã hoàn thành test"
+                : "Chưa làm test đầu vào"}
             </h3>
 
             <p className="mt-2 text-sm leading-6 text-gray-600">
@@ -225,6 +265,7 @@ export default function StudentHome() {
             {/* KHO TRI THỨC */}
             <button
               type="button"
+              onClick={() => navigate("/student/knowledge")}
               className="rounded-3xl bg-white p-6 text-left shadow-sm ring-1 ring-[#eadfd5] transition hover:-translate-y-0.5 hover:shadow-md"
             >
               <p className="text-3xl">📖</p>
