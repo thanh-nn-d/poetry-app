@@ -33,9 +33,10 @@ export default function StudentHome() {
     navigate("/student/assessment")
   }
 
+  // Chỉ cho phép vào khu vực luyện tập
+  // sau khi học sinh đã hoàn thành bài test đầu vào.
   const handlePractice = () => {
     if (!hasAssessment) {
-      navigate("/student/assessment")
       return
     }
 
@@ -212,19 +213,24 @@ export default function StudentHome() {
           </p>
 
           <div className="mt-5 grid gap-5 sm:grid-cols-2">
-            {/* LUYỆN TẬP */}
+            {/* =================================================
+                LUYỆN TẬP
+            ================================================= */}
             <button
               type="button"
               onClick={handlePractice}
+              disabled={!hasAssessment}
               className={`rounded-3xl p-6 text-left shadow-sm ring-1 transition ${
                 hasAssessment
                   ? "bg-white ring-[#eadfd5] hover:-translate-y-0.5 hover:shadow-md"
-                  : "bg-gray-50 ring-gray-200"
+                  : "cursor-not-allowed bg-gray-50 ring-gray-200 opacity-75"
               }`}
             >
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <p className="text-3xl">📚</p>
+                  <p className="text-3xl">
+                    {hasAssessment ? "📚" : "🔒"}
+                  </p>
 
                   <h3 className="mt-4 text-xl font-bold text-[#7f1d2d]">
                     Luyện tập
@@ -233,7 +239,7 @@ export default function StudentHome() {
                   <p className="mt-2 text-sm leading-6 text-gray-600">
                     {hasAssessment
                       ? "Chọn văn bản và thực hiện các hoạt động đọc hiểu theo mức hỗ trợ hiện tại."
-                      : "Hoàn thành bài test đầu vào trước khi bắt đầu luyện tập."}
+                      : "Hoàn thành bài test đầu vào để mở khóa khu vực luyện tập."}
                   </p>
                 </div>
 
@@ -245,7 +251,9 @@ export default function StudentHome() {
               </div>
             </button>
 
-            {/* HỒ SƠ */}
+            {/* =================================================
+                HỒ SƠ
+            ================================================= */}
             <button
               type="button"
               onClick={() => navigate("/student/profile")}
@@ -262,7 +270,9 @@ export default function StudentHome() {
               </p>
             </button>
 
-            {/* KHO TRI THỨC */}
+            {/* =================================================
+                KHO TRI THỨC
+            ================================================= */}
             <button
               type="button"
               onClick={() => navigate("/student/knowledge")}
@@ -279,7 +289,9 @@ export default function StudentHome() {
               </p>
             </button>
 
-            {/* PHẢN HỒI */}
+            {/* =================================================
+                PHẢN HỒI
+            ================================================= */}
             <button
               type="button"
               className="rounded-3xl bg-white p-6 text-left shadow-sm ring-1 ring-[#eadfd5] transition hover:-translate-y-0.5 hover:shadow-md"

@@ -1,14 +1,28 @@
 import { useLocation, useNavigate } from "react-router-dom"
 
-export default function BackButton() {
+function BackButton() {
   const navigate = useNavigate()
   const location = useLocation()
 
-  // Không hiển thị nút ở trang chủ học sinh
-  if (location.pathname === "/student/home") {
+  const pathname = location.pathname
+
+  // =====================================================
+  // NHỮNG TRANG KHÔNG CẦN NÚT QUAY LẠI
+  // =====================================================
+  const noBackButtonPaths = [
+    "/",
+    "/register",
+    "/student/home",
+    "/teacher",
+  ]
+
+  if (noBackButtonPaths.includes(pathname)) {
     return null
   }
 
+  // =====================================================
+  // QUAY LẠI TRANG TRƯỚC
+  // =====================================================
   const handleBack = () => {
     navigate(-1)
   }
@@ -45,3 +59,7 @@ export default function BackButton() {
     </button>
   )
 }
+
+// Cho phép import theo cả 2 cách
+export { BackButton }
+export default BackButton
