@@ -1,17 +1,25 @@
 import { useNavigate } from "react-router-dom"
 import { logoutAccount } from "../../auth"
+import demoStudents from "../../data/demoStudents"
 
 export default function Dashboard() {
   const navigate = useNavigate()
 
-  // Dữ liệu học sinh mặc định để trống.
-  // Sau này có backend thì thay bằng dữ liệu lấy từ API.
-  const students = []
+  const students = demoStudents
 
   const stats = {
     total: students.length,
-    active: 0,
-    avg: 0,
+
+    active: students.filter(
+      (student) => student.activeToday,
+    ).length,
+
+    avg: Math.round(
+      students.reduce(
+        (sum, student) => sum + student.progress,
+        0,
+      ) / students.length,
+    ),
   }
 
   const handleLogout = () => {
@@ -73,12 +81,31 @@ export default function Dashboard() {
           />
         </div>
 
+        {/* Ghi chú demo */}
+        <div className="rounded-2xl border border-[#eadfd5] bg-[#fffaf3] px-5 py-4">
+          <p className="text-sm font-semibold text-[#7f1d2d]">
+            Dữ liệu minh họa
+          </p>
+
+          <p className="mt-1 text-sm leading-6 text-gray-600">
+            Danh sách dưới đây là dữ liệu học sinh mẫu được
+            sử dụng để minh họa cơ chế theo dõi và đánh giá
+            trong giao diện giáo viên.
+          </p>
+        </div>
+
         {/* Danh sách học sinh */}
         <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm">
           <div className="mb-5 flex items-center justify-between">
-            <h2 className="text-xl font-bold text-[#7f1d2d]">
-              Danh sách học sinh
-            </h2>
+            <div>
+              <h2 className="text-xl font-bold text-[#7f1d2d]">
+                Danh sách học sinh
+              </h2>
+
+              <p className="mt-1 text-sm text-gray-500">
+                Theo dõi mức hỗ trợ, tiến độ và hoạt động học tập.
+              </p>
+            </div>
 
             <button
               type="button"
@@ -89,57 +116,55 @@ export default function Dashboard() {
             </button>
           </div>
 
-          {students.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-[#eadfd5] bg-[#fffaf3] px-6 py-12 text-center">
-              <p className="text-base font-semibold text-[#7f1d2d]">
-                Chưa có dữ liệu học sinh
-              </p>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left">
+              <thead>
+                <tr className="border-b text-sm text-gray-500">
+                  <th className="py-3">
+                    HỌC SINH
+                  </th>
 
-              <p className="mt-2 text-sm text-gray-500">
-                Dữ liệu học sinh sẽ hiển thị tại đây sau khi có hoạt động học
-                tập.
-              </p>
+                  <th>
+                    MỨC HỖ TRỢ
+                  </th>
 
-              <button
-                type="button"
-                onClick={() => navigate("/teacher/students")}
-                className="mt-5 rounded-xl bg-[#7f1d2d] px-5 py-2.5 text-sm font-semibold text-white hover:bg-[#6b1826]"
-              >
-                Xem danh sách học sinh
-              </button>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="border-b text-sm text-gray-500">
-                    <th className="py-3">HỌC SINH</th>
-                    <th>MỨC HỖ TRỢ</th>
-                    <th>TIẾN ĐỘ</th>
-                    <th>HOẠT ĐỘNG GẦN NHẤT</th>
-                  </tr>
-                </thead>
+                  <th>
+                    TIẾN ĐỘ
+                  </th>
 
-                <tbody>
-                  {students.map((student) => (
-                    <tr
-                      key={student.id}
-                      className="border-b last:border-0"
-                    >
-                      <td className="py-4 font-semibold">
-                        {student.name}
+                  <th>
+                    TẢI NHẬN THỨC
+                  </th>
 
-                        <div className="text-xs text-gray-400">
-                          {student.id}
-                        </div>
-                      </td>
+                  <th>
+                    HOẠT ĐỘNG GẦN NHẤT
+                  </th>
+                </tr>
+              </thead>
 
-                      <td>
+              <tbody>
+                {students.map((student) => (
+                  <tr
+                    key={student.id}
+                    className="border-b last:border-0"
+                  >
+                    <td className="py-4 font-semibold">
+                      {student.name}
+
+                      <div className="text-xs text-gray-400">
+                        {student.id}
+                      </div>
+                    </td>
+
+                    <td>
+                      <span className="rounded-full bg-[#fff3e6] px-3 py-1 text-sm font-semibold text-[#7f1d2d]">
                         Mức {student.level}
-                      </td>
+                      </span>
+                    </td>
 
-                      <td>
-                        <div className="h-2 w-40 rounded-full bg-gray-100">
+                    <td>
+                      <div className="flex items-center gap-3">
+                        <div className="h-2 w-32 rounded-full bg-gray-100">
                           <div
                             className="h-2 rounded-full bg-[#7f1d2d]"
                             style={{
@@ -151,17 +176,21 @@ export default function Dashboard() {
                         <span className="text-xs">
                           {student.progress}%
                         </span>
-                      </td>
+                      </div>
+                    </td>
 
-                      <td>
-                        {student.last}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+                    <td>
+                      {student.load}
+                    </td>
+
+                    <td className="max-w-xs text-sm text-gray-600">
+                      {student.last}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </section>
 
         {/* Tác vụ */}

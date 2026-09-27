@@ -1,16 +1,17 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { logoutAccount } from "../../auth"
+import demoStudents from "../../data/demoStudents"
 
 export default function Feedback() {
   const nav = useNavigate()
+
+  const students = demoStudents
 
   const [student, setStudent] = useState("")
   const [type, setType] = useState("Gợi ý cải thiện")
   const [text, setText] = useState("")
   const [saved, setSaved] = useState(false)
-
-  const students = []
 
   const save = () => {
     if (!student || !text.trim()) return
@@ -77,43 +78,55 @@ export default function Feedback() {
 
       <main className="mx-auto max-w-4xl p-8">
         <div className="rounded-2xl border bg-white p-6 shadow-sm">
+          {/* Ghi chú demo */}
+          <div className="mb-6 rounded-xl border border-[#eadfd5] bg-[#fffaf3] px-4 py-4">
+            <p className="text-sm font-semibold text-[#7f1d2d]">
+              Dữ liệu học sinh mẫu
+            </p>
+
+            <p className="mt-1 text-xs leading-5 text-gray-600">
+              Danh sách được tạo sẵn để minh họa cách giáo viên
+              gửi phản hồi cho từng học sinh.
+            </p>
+          </div>
+
           {/* Học sinh */}
           <div>
             <label className="mb-2 block text-sm font-semibold">
               Học sinh
             </label>
 
-            {students.length === 0 ? (
-              <div className="rounded-xl border border-dashed border-[#eadfd5] bg-[#fffaf3] px-4 py-4">
-                <p className="text-sm font-semibold text-[#7f1d2d]">
-                  Chưa có học sinh
-                </p>
+            <select
+              value={student}
+              onChange={(e) => {
+                setStudent(e.target.value)
+                setSaved(false)
+              }}
+              className="w-full rounded-xl border px-4 py-3 outline-none focus:border-[#7f1d2d]"
+            >
+              <option value="">
+                Chọn học sinh
+              </option>
 
-                <p className="mt-1 text-xs leading-5 text-gray-500">
-                  Danh sách học sinh sẽ xuất hiện tại đây khi có dữ liệu.
-                </p>
-              </div>
-            ) : (
-              <select
-                value={student}
-                onChange={(e) => {
-                  setStudent(e.target.value)
-                  setSaved(false)
-                }}
-                className="w-full rounded-xl border px-4 py-3 outline-none focus:border-[#7f1d2d]"
-              >
-                <option value="">
-                  Chọn học sinh
+              {students.map((item) => (
+                <option
+                  key={item.id}
+                  value={item.name}
+                >
+                  {item.name} — Mức {item.level}
                 </option>
-
-                {students.map((item) => (
-                  <option key={item.id} value={item.name}>
-                    {item.name}
-                  </option>
-                ))}
-              </select>
-            )}
+              ))}
+            </select>
           </div>
+
+          {/* Thông tin học sinh */}
+          {student && (
+            <StudentSummary
+              student={students.find(
+                (item) => item.name === student,
+              )}
+            />
+          )}
 
           {/* Loại phản hồi */}
           <div className="mt-5">
@@ -129,9 +142,17 @@ export default function Feedback() {
               }}
               className="w-full rounded-xl border px-4 py-3 outline-none focus:border-[#7f1d2d]"
             >
-              <option>Gợi ý cải thiện</option>
-              <option>Nhận xét kết quả</option>
-              <option>Động viên</option>
+              <option>
+                Gợi ý cải thiện
+              </option>
+
+              <option>
+                Nhận xét kết quả
+              </option>
+
+              <option>
+                Động viên
+              </option>
             </select>
           </div>
 
@@ -171,6 +192,44 @@ export default function Feedback() {
           </button>
         </div>
       </main>
+    </div>
+  )
+}
+
+function StudentSummary({ student }) {
+  if (!student) return null
+
+  return (
+    <div className="mt-4 grid gap-3 rounded-xl bg-[#faf8f3] p-4 sm:grid-cols-3">
+      <div>
+        <p className="text-xs text-gray-500">
+          Mức hỗ trợ
+        </p>
+
+        <p className="mt-1 font-semibold text-[#7f1d2d]">
+          Mức {student.level}
+        </p>
+      </div>
+
+      <div>
+        <p className="text-xs text-gray-500">
+          Tiến độ
+        </p>
+
+        <p className="mt-1 font-semibold text-[#7f1d2d]">
+          {student.progress}%
+        </p>
+      </div>
+
+      <div>
+        <p className="text-xs text-gray-500">
+          Tải nhận thức
+        </p>
+
+        <p className="mt-1 font-semibold text-[#7f1d2d]">
+          {student.load}
+        </p>
+      </div>
     </div>
   )
 }

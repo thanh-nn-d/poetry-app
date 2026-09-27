@@ -1,14 +1,13 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { logoutAccount } from "../../auth"
+import demoStudents from "../../data/demoStudents"
 
 export default function StudentProfile() {
   const nav = useNavigate()
-  const [selected, setSelected] = useState(null)
+  const [selected, setSelected] = useState(demoStudents[0])
 
-  // Dữ liệu mặc định để trống.
-  // Sau này có backend thì thay bằng dữ liệu lấy từ API.
-  const students = []
+  const students = demoStudents
 
   const handleLogout = () => {
     logoutAccount()
@@ -53,57 +52,61 @@ export default function StudentProfile() {
       <main className="mx-auto grid max-w-6xl gap-6 p-8 lg:grid-cols-[280px_1fr]">
         {/* Danh sách học sinh */}
         <aside className="h-fit rounded-2xl border bg-white p-4">
-          <h2 className="mb-3 font-bold text-[#7f1d2d]">
+          <h2 className="mb-1 font-bold text-[#7f1d2d]">
             Danh sách học sinh
           </h2>
 
-          {students.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-[#eadfd5] bg-[#fffaf3] p-5 text-center">
-              <p className="text-sm font-semibold text-[#7f1d2d]">
-                Chưa có học sinh
-              </p>
+          <p className="mb-4 text-xs text-gray-500">
+            Chọn học sinh để xem hồ sơ.
+          </p>
 
-              <p className="mt-2 text-xs leading-5 text-gray-500">
-                Danh sách học sinh sẽ hiển thị tại đây khi có dữ liệu.
-              </p>
-            </div>
-          ) : (
-            students.map((student) => (
-              <button
-                key={student.id}
-                type="button"
-                onClick={() => setSelected(student)}
-                className={`mb-2 w-full rounded-xl p-3 text-left ${
-                  selected?.id === student.id
-                    ? "border border-red-200 bg-red-50"
-                    : "hover:bg-gray-50"
-                }`}
-              >
-                <b>{student.name}</b>
+          {students.map((student) => (
+            <button
+              key={student.id}
+              type="button"
+              onClick={() => setSelected(student)}
+              className={`mb-2 w-full rounded-xl p-3 text-left transition ${
+                selected?.id === student.id
+                  ? "border border-red-200 bg-red-50"
+                  : "hover:bg-gray-50"
+              }`}
+            >
+              <b>{student.name}</b>
 
-                <span className="block text-xs text-gray-500">
-                  Mức {student.level} · {student.progress}%
-                </span>
-              </button>
-            ))
-          )}
+              <span className="mt-1 block text-xs text-gray-500">
+                Mức {student.level} · {student.progress}%
+              </span>
+            </button>
+          ))}
         </aside>
 
         {/* Nội dung hồ sơ */}
         <section className="space-y-6">
-          {selected ? (
+          {selected && (
             <>
-              {/* Thông tin tổng quan */}
+              {/* Tổng quan */}
               <div className="rounded-2xl border bg-white p-6">
-                <h2 className="text-2xl font-bold text-[#7f1d2d]">
-                  {selected.name}
-                </h2>
+                <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-start">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wide text-[#a16207]">
+                      HỒ SƠ HỌC SINH
+                    </p>
 
-                <p className="text-gray-500">
-                  {selected.id}
-                </p>
+                    <h2 className="mt-1 text-2xl font-bold text-[#7f1d2d]">
+                      {selected.name}
+                    </h2>
 
-                <div className="mt-6 grid gap-4 sm:grid-cols-4">
+                    <p className="text-sm text-gray-500">
+                      {selected.id}
+                    </p>
+                  </div>
+
+                  <span className="w-fit rounded-full bg-[#fff3e6] px-3 py-1 text-sm font-semibold text-[#7f1d2d]">
+                    Mức {selected.level}
+                  </span>
+                </div>
+
+                <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                   <Metric
                     t="Mức hỗ trợ"
                     v={`Mức ${selected.level}`}
@@ -128,11 +131,11 @@ export default function StudentProfile() {
 
               {/* Theo dõi quá trình */}
               <div className="rounded-2xl border bg-white p-6">
-                <h3 className="mb-4 font-bold text-[#7f1d2d]">
+                <h3 className="mb-5 font-bold text-[#7f1d2d]">
                   Theo dõi quá trình
                 </h3>
 
-                <div className="space-y-4">
+                <div className="space-y-5">
                   <Row
                     t="Tiến độ học tập"
                     v={selected.progress}
@@ -149,39 +152,120 @@ export default function StudentProfile() {
                     }
                   />
                 </div>
+
+                <div className="mt-6 grid gap-4 sm:grid-cols-2">
+                  <Info
+                    title="Thời gian học"
+                    value={selected.studyTime}
+                  />
+
+                  <Info
+                    title="Đánh giá đầu vào"
+                    value={selected.initialAssessment}
+                  />
+                </div>
               </div>
 
-              {/* Kết quả thử thách */}
+              {/* Kết quả challenge */}
               <div className="rounded-2xl border bg-white p-6">
-                <h3 className="mb-4 font-bold text-[#7f1d2d]">
-                  Kết quả thử thách
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <h3 className="font-bold text-[#7f1d2d]">
+                    Kết quả thử thách chuyển mức
+                  </h3>
+
+                  <span
+                    className={`w-fit rounded-full px-3 py-1 text-sm font-semibold ${
+                      selected.challenge === "Đã đạt"
+                        ? "bg-green-50 text-green-700"
+                        : selected.challenge === "Không đạt"
+                          ? "bg-red-50 text-red-700"
+                          : selected.challenge.includes("Đạt")
+                            ? "bg-green-50 text-green-700"
+                            : "bg-gray-100 text-gray-600"
+                    }`}
+                  >
+                    {selected.challenge}
+                  </span>
+                </div>
+
+                <p className="mt-4 leading-6 text-gray-700">
+                  {selected.challengeDetail}
+                </p>
+
+                <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                  <Info
+                    title="Kết quả"
+                    value={selected.challengeResult}
+                  />
+
+                  <Info
+                    title="Mức hỗ trợ hiện tại"
+                    value={`Mức ${selected.level}`}
+                  />
+                </div>
+              </div>
+
+              {/* Hoạt động gần đây */}
+              <div className="rounded-2xl border bg-white p-6">
+                <h3 className="mb-5 font-bold text-[#7f1d2d]">
+                  Hoạt động học tập gần đây
                 </h3>
 
-                <p>{selected.challenge}</p>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left">
+                    <thead>
+                      <tr className="border-b text-sm text-gray-500">
+                        <th className="py-3">
+                          HOẠT ĐỘNG
+                        </th>
 
-                <p className="mt-2 text-sm text-gray-500">
-                  Chi tiết điểm/chỉ số sẽ được hiển thị sau khi học sinh
-                  hoàn thành thử thách.
+                        <th>
+                          KẾT QUẢ
+                        </th>
+
+                        <th>
+                          ĐIỂM / TRẠNG THÁI
+                        </th>
+                      </tr>
+                    </thead>
+
+                    <tbody>
+                      {selected.recentActivities.map(
+                        (activity, index) => (
+                          <tr
+                            key={`${selected.id}-${index}`}
+                            className="border-b last:border-0"
+                          >
+                            <td className="py-4 font-medium">
+                              {activity.activity}
+                            </td>
+
+                            <td className="text-sm text-gray-600">
+                              {activity.result}
+                            </td>
+
+                            <td className="text-sm font-semibold text-[#7f1d2d]">
+                              {activity.score}
+                            </td>
+                          </tr>
+                        ),
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Ghi chú */}
+              <div className="rounded-2xl border bg-white p-6">
+                <h3 className="mb-3 font-bold text-[#7f1d2d]">
+                  Ghi chú theo dõi
+                </h3>
+
+                <p className="leading-6 text-gray-700">
+                  {selected.notes}
                 </p>
               </div>
             </>
-          ) : (
-            <div className="flex min-h-[420px] items-center justify-center rounded-2xl border bg-white p-8">
-              <div className="max-w-md text-center">
-                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#fffaf3] text-2xl">
-                  👤
-                </div>
-
-                <h2 className="mt-4 text-xl font-bold text-[#7f1d2d]">
-                  Chưa chọn học sinh
-                </h2>
-
-                <p className="mt-2 text-sm leading-6 text-gray-500">
-                  Chọn một học sinh từ danh sách để xem hồ sơ và quá trình
-                  học tập.
-                </p>
-              </div>
-            </div>
           )}
         </section>
       </main>
@@ -203,11 +287,26 @@ function Metric({ t, v }) {
   )
 }
 
+function Info({ title, value }) {
+  return (
+    <div className="rounded-xl border border-[#eadfd5] bg-[#fffaf3] p-4">
+      <p className="text-xs text-gray-500">
+        {title}
+      </p>
+
+      <p className="mt-1 text-sm font-semibold text-[#7f1d2d]">
+        {value}
+      </p>
+    </div>
+  )
+}
+
 function Row({ t, v }) {
   return (
     <div>
       <div className="mb-1 flex justify-between text-sm">
         <span>{t}</span>
+
         <b>{v}%</b>
       </div>
 
